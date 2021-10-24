@@ -3,8 +3,6 @@ package truelayer
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"log"
 	"net/url"
 	"time"
 )
@@ -298,37 +296,37 @@ func (t *TrueLayer) getAccountTransactions(url *url.URL, accessToken string, acc
 // returns
 //   - the standing orders
 //   - errors from the api request
-func (t *TrueLayer) GetAccountStandingOrders(accessToken string, accountID string) ([]StandingOrder, error) {
-	u, err := buildURL(t.getBaseURL(), fmt.Sprintf(EndpointDataV1AccountStandingOrders, accountID))
+// func (t *TrueLayer) GetAccountStandingOrders(accessToken string, accountID string) ([]StandingOrder, error) {
+// 	u, err := buildURL(t.getBaseURL(), fmt.Sprintf(EndpointDataV1AccountStandingOrders, accountID))
 
-	if err != nil {
-		return nil, err
-	}
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	res, err := t.doAuthorizedGetRequest(u, accessToken)
+// 	res, err := t.doAuthorizedGetRequest(u, accessToken)
 
-	if err != nil {
-		return nil, err
-	}
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	defer res.Body.Close()
+// 	defer res.Body.Close()
 
-	b, _ := io.ReadAll(res.Body)
-	log.Println(string(b))
+// 	b, _ := io.ReadAll(res.Body)
+// 	log.Println(string(b))
 
-	if res.StatusCode >= 300 {
-		return nil, parseErrorResponse(res)
-	}
+// 	if res.StatusCode >= 300 {
+// 		return nil, parseErrorResponse(res)
+// 	}
 
-	standingOrderResp := AccountStandingOrderResponse{}
-	err = json.NewDecoder(res.Body).Decode(&standingOrderResp)
+// 	standingOrderResp := AccountStandingOrderResponse{}
+// 	err = json.NewDecoder(res.Body).Decode(&standingOrderResp)
 
-	if err != nil {
-		return nil, err
-	}
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	return standingOrderResp.Results, nil
-}
+// 	return standingOrderResp.Results, nil
+// }
 
 // GetAccountDirectDebits retrieves the specified account's direct debits this
 //account must be associated to the provided accessToken or an error will occur.
@@ -340,31 +338,31 @@ func (t *TrueLayer) GetAccountStandingOrders(accessToken string, accountID strin
 // returns
 //   - the direct debits
 //   - errors from the api request
-func (t *TrueLayer) GetAccountDirectDebits(accessToken string, accountID string) ([]DirectDebit, error) {
-	u, err := buildURL(t.getBaseURL(), fmt.Sprintf(EndpointDataV1AccountDirectDebits, accountID))
+// func (t *TrueLayer) GetAccountDirectDebits(accessToken string, accountID string) ([]DirectDebit, error) {
+// 	u, err := buildURL(t.getBaseURL(), fmt.Sprintf(EndpointDataV1AccountDirectDebits, accountID))
 
-	if err != nil {
-		return nil, err
-	}
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	res, err := t.doAuthorizedGetRequest(u, accessToken)
+// 	res, err := t.doAuthorizedGetRequest(u, accessToken)
 
-	if err != nil {
-		return nil, err
-	}
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	defer res.Body.Close()
+// 	defer res.Body.Close()
 
-	if res.StatusCode >= 300 {
-		return nil, parseErrorResponse(res)
-	}
+// 	if res.StatusCode >= 300 {
+// 		return nil, parseErrorResponse(res)
+// 	}
 
-	directDebitResp := AccountDirectDebitResponse{}
-	err = json.NewDecoder(res.Body).Decode(&directDebitResp)
+// 	directDebitResp := AccountDirectDebitResponse{}
+// 	err = json.NewDecoder(res.Body).Decode(&directDebitResp)
 
-	if err != nil {
-		return nil, err
-	}
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	return directDebitResp.Results, nil
-}
+// 	return directDebitResp.Results, nil
+// }
