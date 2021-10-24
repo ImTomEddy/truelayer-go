@@ -137,6 +137,15 @@ func (t *TrueLayer) GetAccessToken(code string, redirURI *url.URL) (token *Acces
 	return token, err
 }
 
+// RefreshAccessToken takes a refresh token and returns a refreshed access token
+// allowing for continued use without user disruptuon.
+//
+// params
+//   - refreshToken - user refresh token
+//
+// returns
+//   - token - access token
+//   - err - any errors that have occurred
 func (t *TrueLayer) RefreshAccessToken(refreshToken string) (token *AccessTokenResponse, err error) {
 	u, err := t.getBaseAuthURL()
 	u.Path = "/connect/token"
