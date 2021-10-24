@@ -1,12 +1,10 @@
 package truelayer
 
-type Permission string
-
-const PermissionAccounts Permission = "accounts"
-const PermissionBalance Permission = "balance"
-const PermissionCards Permission = "cards"
-const PermissionTransactions Permission = "transactions"
-const PermissionDirectDebits Permission = "direct_debits"
-const PermissionStandingOrders Permission = "standing_orders"
-const PermissionOfflineAccess Permission = "offline_access"
-const PermissionInfo Permission = "info"
+const PermissionAccounts = "accounts"
+const PermissionBalance = "balance"
+const PermissionCards = "cards"
+const PermissionTransactions = "transactions"
+const PermissionDirectDebits = "direct_debits"
+const PermissionStandingOrders = "standing_orders"
+const PermissionOfflineAccess = "offline_access"
+const PermissionInfo = "info"
