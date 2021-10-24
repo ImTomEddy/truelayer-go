@@ -1,13 +1,15 @@
 package truelayer
 
 import (
+	"encoding/json"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
 )
 
-const baseURLSandbox = "https://auth.truelayer-sandbox.com/"
-const baseURL = "https://auth.truelayer.com/"
+const baseAuthURLSandbox = "https://auth.truelayer-sandbox.com"
+const baseAuthURL = "https://auth.truelayer.com"
 
 type TrueLayer struct {
 	clientID     string
@@ -20,6 +22,15 @@ type TrueLayer struct {
 // HTTP Client that will be used by the TrueLayer Client.
 type httpClient interface {
 	Do(req *http.Request) (*http.Response, error)
+}
+
+// AccessTokenResponse is the JSON Structure returned when requesting an
+// AccessToken from TrueLayer.
+type AccessTokenResponse struct {
+	AccessToken  string `json:"access_token"`
+	ExpiresIn    int    `json:"expires_in"`
+	TokenType    string `json:"token_type"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 // New creates a new instance of the TrueLayer go client. This is done to allow
@@ -70,13 +81,7 @@ func NewWithHTTPClient(clientID, clientSecret string, sandbox bool, httpClient h
 //   - link - the authentication link
 //   - err - error parsing the base URL - should not occur
 func (t *TrueLayer) GetAuthenticationLink(providers []string, permissions []string, redirURI *url.URL, postCode bool) (link string, err error) {
-	var u *url.URL
-
-	if t.sandbox {
-		u, err = url.Parse(baseURLSandbox)
-	} else {
-		u, err = url.Parse(baseURL)
-	}
+	u, err := t.getBaseAuthURL()
 
 	if err != nil {
 		return link, err
@@ -100,6 +105,61 @@ func (t *TrueLayer) GetAuthenticationLink(providers []string, permissions []stri
 	return u.String(), err
 }
 
-func (t *TrueLayer) GetAccessToken(code string) (token string, err error) {
+// GetAccessToken contacts the TrueLayer API and gets an access token to allow
+// for authenticated requests to the TrueLayer Data API.
+//
+// params
+//   - code - authentication code retrieved from the user
+//
+// returns
+//   - token - access token
+//   - err - any errors that have occurred
+func (t *TrueLayer) GetAccessToken(code string, redirURI *url.URL) (token *AccessTokenResponse, err error) {
+	u, err := t.getBaseAuthURL()
+	u.Path = "/connect/token"
+
+	body := url.Values{}
+	body.Add("grant_type", "authorization_code")
+	body.Add("client_id", t.clientID)
+	body.Add("client_secret", t.clientSecret)
+	body.Add("redirect_uri", redirURI.String())
+	body.Add("code", code)
+
+	req, err := http.NewRequest(http.MethodPost, u.String(), strings.NewReader(body.Encode()))
+	if err != nil {
+		return token, err
+	}
+
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	res, err := t.httpClient.Do(req)
+	if err != nil {
+		return token, err
+	}
+
+	defer res.Body.Close()
+
+	token = &AccessTokenResponse{}
+	err = json.NewDecoder(res.Body).Decode(token)
+	if err != nil {
+		log.Println("error")
+		return token, err
+	}
+
 	return token, err
+}
+
+// getBaseAuthURL parses the baseAuthURL for either the sandbox or non-sandbox
+// TrueLayer environments and returns them. Using a utility method to reduce
+// code duplication.
+//
+// returns
+//   - the parsed url
+//   - url parsing errors - should not occur as these are hard-coded values
+func (t *TrueLayer) getBaseAuthURL() (*url.URL, error) {
+	if t.sandbox {
+		return url.Parse(baseAuthURLSandbox)
+	}
+
+	return url.Parse(baseAuthURL)
 }
