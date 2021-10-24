@@ -1,6 +1,7 @@
 package truelayer
 
 import (
+	"net/http"
 	"net/url"
 	"strings"
 )
@@ -12,6 +13,13 @@ type TrueLayer struct {
 	clientID     string
 	clientSecret string
 	sandbox      bool
+	httpClient   httpClient
+}
+
+// httpClient is an interface to define the methods required from any kind of
+// HTTP Client that will be used by the TrueLayer Client.
+type httpClient interface {
+	Do(req *http.Request) (*http.Response, error)
 }
 
 // New creates a new instance of the TrueLayer go client. This is done to allow
@@ -25,10 +33,27 @@ type TrueLayer struct {
 // returns
 //   - instance of TrueLayer client
 func New(clientID, clientSecret string, sandbox bool) *TrueLayer {
+	return NewWithHTTPClient(clientID, clientSecret, sandbox, &http.Client{})
+}
+
+// NewWithHTTPClient creates a new instance of the TrueLayer go client, with a
+// custom HTTP Client. This is done to allow for mocking within user
+// implementation to allow for greater test coverage.
+//
+// params
+//   - clientID - TrueLayer client_id
+//   - clientSecret - TrueLayer client_secret
+//   - sandbox - true if using the sandbox environment
+//   - httpClient - custom HTTP client for the TrueLayer client to use
+//
+// returns
+//   - instance of TrueLayer client
+func NewWithHTTPClient(clientID, clientSecret string, sandbox bool, httpClient httpClient) *TrueLayer {
 	return &TrueLayer{
 		clientID:     clientID,
 		clientSecret: clientSecret,
 		sandbox:      sandbox,
+		httpClient:   httpClient,
 	}
 }
 
@@ -73,4 +98,8 @@ func (t *TrueLayer) GetAuthenticationLink(providers []string, permissions []stri
 	u.RawQuery = q.Encode()
 
 	return u.String(), err
+}
+
+func (t *TrueLayer) GetAccessToken(code string) (token string, err error) {
+	return token, err
 }
