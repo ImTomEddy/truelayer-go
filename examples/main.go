@@ -41,6 +41,7 @@ func main() {
 	})
 
 	http.HandleFunc(config.RedirectPath, handleCallback(t, redirectURL))
+	http.HandleFunc("/refresh", handleRefreshToken(t))
 	http.ListenAndServe(":"+redirectURL.Port(), nil)
 }
 
@@ -54,6 +55,30 @@ func handleCallback(t *truelayer.TrueLayer, redirectURL *url.URL) func(rw http.R
 		}
 
 		token, err := t.GetAccessToken(code, redirectURL)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		b, err := json.Marshal(token)
+		if err != nil {
+			return
+		}
+
+		rw.Write(b)
+	}
+}
+
+func handleRefreshToken(t *truelayer.TrueLayer) func(rw http.ResponseWriter, r *http.Request) {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		refresh := r.URL.Query().Get("refresh")
+
+		if refresh == "" {
+			log.Panicln("No refresh token")
+			return
+		}
+
+		token, err := t.RefreshAccessToken(refresh)
 		if err != nil {
 			log.Println(err)
 			return

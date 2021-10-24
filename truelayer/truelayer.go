@@ -2,7 +2,6 @@ package truelayer
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -132,7 +131,30 @@ func (t *TrueLayer) GetAccessToken(code string, redirURI *url.URL) (token *Acces
 	token = &AccessTokenResponse{}
 	err = json.NewDecoder(res.Body).Decode(token)
 	if err != nil {
-		log.Println("error")
+		return token, err
+	}
+
+	return token, err
+}
+
+func (t *TrueLayer) RefreshAccessToken(refreshToken string) (token *AccessTokenResponse, err error) {
+	u, err := t.getBaseAuthURL()
+	u.Path = "/connect/token"
+
+	body := t.getNewURLValuesWithClientInfo(true)
+	body.Add("grant_type", "refresh_token")
+	body.Add("refresh_token", refreshToken)
+
+	res, err := t.doRequestWithFormURLEncodedBody(http.MethodPost, u.String(), body)
+	if err != nil {
+		return token, err
+	}
+
+	defer res.Body.Close()
+
+	token = &AccessTokenResponse{}
+	err = json.NewDecoder(res.Body).Decode(token)
+	if err != nil {
 		return token, err
 	}
 
