@@ -15,3 +15,38 @@ the SDK does provide hard-coded provider values to make it easier to manage.
 
 The hard-coded providers can be found under 
 [truelayer/providers](truelayer/providers/).
+
+## Supported Features
+- [x] Authentication
+  - [x] Access Token
+  - [x] Refresh Token
+- [ ] Data API
+  - [ ] Async Support
+  - [ ] Correlation ID
+  - [ ] PSU-IP
+  - [ ] Accounts
+    - [x] Get Accounts
+    - [x] Get Account
+    - [x] Get Account Balance
+    - [ ] Get Account Transactions
+      Missing
+      -  to
+      -  from
+    - [ ] Get Account Pending Transactions
+      Missing
+      - to
+      - from 
+    - [ ] Get Standing Orders
+    - [ ] Get Direct Debits
+  - [ ] Batch
+    - [ ] Initiate Batch Call
+    - [ ] Get Data In Batch
+  - [ ] Cards
+    - [ ] Get Cards
+    - [ ] Get Card
+    - [ ] Get Card Balance
+    - [ ] Get Card Transactions
+    - [ ] Get Card Pending Transactions
+  - [ ] Meta
+    - [ ] Get Connection Metadata
+    - [ ] Get User Info
