@@ -2,6 +2,7 @@ package truelayer
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 )
@@ -12,6 +13,9 @@ type TrueLayer struct {
 	sandbox      bool
 	httpClient   httpClient
 }
+
+const baseURL = "https://api.truelayer.com"
+const baseSandboxURL = "https://api.truelayer-sandbox.com"
 
 // httpClient is an interface to define the methods required from any kind of
 // HTTP Client that will be used by the TrueLayer Client.
@@ -54,6 +58,30 @@ func NewWithHTTPClient(clientID, clientSecret string, sandbox bool, httpClient h
 	}
 }
 
+// doAuthorizedGetRequest executes a request with an Authorization header with
+// the provided accessToken to the provided URL.
+//
+// params
+//   - url - the URL to make a request
+//   - accessToken - the access token to use
+//
+// returns
+//   - the http response
+//   - any errors that have occurred
+func (t *TrueLayer) doAuthorizedGetRequest(url *url.URL, accessToken string) (*http.Response, error) {
+	req, err := http.NewRequest(http.MethodGet, url.String(), nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", accessToken))
+
+	res, err := t.httpClient.Do(req)
+
+	return res, err
+}
+
 // buildURL takes a base URL as well as a path and combines them into a url.URL
 // object.
 //
@@ -91,4 +119,18 @@ func parseErrorResponse(res *http.Response) (err error) {
 		return err
 	}
 	return respErr
+}
+
+// getBaseURL parses the baseAuthURL for either the sandbox or non-sandbox
+// TrueLayer environments and returns them. Using a utility method to reduce
+// code duplication.
+//
+// returns
+//   - the base url
+func (t *TrueLayer) getBaseURL() string {
+	if t.sandbox {
+		return baseSandboxURL
+	}
+
+	return baseURL
 }

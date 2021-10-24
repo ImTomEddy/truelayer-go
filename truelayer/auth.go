@@ -175,8 +175,7 @@ func (t *TrueLayer) getURLValuesWithClientInfo(values url.Values, withSecret boo
 // code duplication.
 //
 // returns
-//   - the parsed url
-//   - url parsing errors - should not occur as these are hard-coded values
+//   - the base url
 func (t *TrueLayer) getAuthBaseURL() string {
 	if t.sandbox {
 		return authBaseURLSandbox

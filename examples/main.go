@@ -42,6 +42,7 @@ func main() {
 
 	http.HandleFunc(config.RedirectPath, handleCallback(t, redirectURL))
 	http.HandleFunc("/refresh", handleRefreshToken(t))
+	http.HandleFunc("/get", handleGet(t))
 	http.ListenAndServe(":"+redirectURL.Port(), nil)
 }
 
@@ -74,7 +75,7 @@ func handleRefreshToken(t *truelayer.TrueLayer) func(rw http.ResponseWriter, r *
 		refresh := r.URL.Query().Get("refresh")
 
 		if refresh == "" {
-			log.Panicln("No refresh token")
+			log.Println("No refresh token")
 			return
 		}
 
@@ -90,5 +91,57 @@ func handleRefreshToken(t *truelayer.TrueLayer) func(rw http.ResponseWriter, r *
 		}
 
 		rw.Write(b)
+	}
+}
+
+func handleGet(t *truelayer.TrueLayer) func(rw http.ResponseWriter, r *http.Request) {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		action := r.URL.Query().Get("action")
+		token := r.URL.Query().Get("token")
+		opt := r.URL.Query().Get("option")
+
+		if action == "" {
+			log.Println("No action")
+			return
+		}
+
+		if token == "" {
+			log.Println("No token")
+			return
+		}
+
+		if opt == "" {
+			log.Println("No option")
+			return
+		}
+
+		switch action {
+		case "accounts":
+			accounts, err := t.GetAccounts(token)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+
+			b, err := json.Marshal(accounts)
+			if err != nil {
+				return
+			}
+
+			rw.Write(b)
+		case "account":
+			account, err := t.GetAccount(token, opt)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+
+			b, err := json.Marshal(account)
+			if err != nil {
+				return
+			}
+
+			rw.Write(b)
+		}
 	}
 }
