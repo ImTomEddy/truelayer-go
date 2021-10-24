@@ -3,6 +3,8 @@ package truelayer
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"log"
 	"net/url"
 	"time"
 )
@@ -36,7 +38,7 @@ type Balance struct {
 	Currency        string    `json:"currency"`
 	Available       float64   `json:"available"`
 	Current         float64   `json:"current"`
-	Overdraft       int       `json:"overdraft"`
+	Overdraft       float64   `json:"overdraft"`
 	UpdateTimestamp time.Time `json:"update_timestamp"`
 }
 
@@ -71,11 +73,11 @@ type StandingOrder struct {
 		ProviderAccountID string `json:"provider_account_id"`
 	} `json:"meta"`
 	NextPaymentDate    time.Time `json:"next_payment_date"`
-	NextPaymentAmount  int       `json:"next_payment_amount"`
+	NextPaymentAmount  float64   `json:"next_payment_amount"`
 	FirstPaymentDate   time.Time `json:"first_payment_date"`
-	FirstPaymentAmount int       `json:"first_payment_amount"`
+	FirstPaymentAmount float64   `json:"first_payment_amount"`
 	FinalPaymentDate   time.Time `json:"final_payment_date"`
-	FinalPaymentAmount int       `json:"final_payment_amount"`
+	FinalPaymentAmount float64   `json:"final_payment_amount"`
 	Reference          string    `json:"reference"`
 	Payee              string    `json:"payee"`
 }
@@ -102,7 +104,7 @@ type DirectDebit struct {
 // returns
 //   - list of accounts
 //   - errors from the api request
-func (t *TrueLayer) GetAccounts(accessToken string) (*[]Account, error) {
+func (t *TrueLayer) GetAccounts(accessToken string) ([]Account, error) {
 	u, err := buildURL(t.getBaseURL(), EndpointDataV1Accounts)
 
 	if err != nil {
@@ -128,7 +130,7 @@ func (t *TrueLayer) GetAccounts(accessToken string) (*[]Account, error) {
 		return nil, err
 	}
 
-	return &accountResp.Results, nil
+	return accountResp.Results, nil
 }
 
 // GetAccount retrieves the specified account based on accountID, this account
@@ -219,7 +221,7 @@ func (t *TrueLayer) GetAccountBalance(accessToken string, accountID string) (*Ba
 // returns
 //   - the transactions
 //   - errors from the api request
-func (t *TrueLayer) GetAccountTransactions(accessToken string, accountID string) (*[]Transaction, error) {
+func (t *TrueLayer) GetAccountTransactions(accessToken string, accountID string) ([]Transaction, error) {
 	u, err := buildURL(t.getBaseURL(), fmt.Sprintf(EndpointDataV1AccountTransactions, accountID))
 
 	if err != nil {
@@ -240,7 +242,7 @@ func (t *TrueLayer) GetAccountTransactions(accessToken string, accountID string)
 // returns
 //   - the transactions
 //   - errors from the api request
-func (t *TrueLayer) GetAccountPendingTransactions(accessToken string, accountID string) (*[]Transaction, error) {
+func (t *TrueLayer) GetAccountPendingTransactions(accessToken string, accountID string) ([]Transaction, error) {
 	u, err := buildURL(t.getBaseURL(), fmt.Sprintf(EndpointDataV1AccountPendingTransactions, accountID))
 
 	if err != nil {
@@ -262,7 +264,7 @@ func (t *TrueLayer) GetAccountPendingTransactions(accessToken string, accountID 
 // returns
 //   - the transactions
 //   - errors from the api request
-func (t *TrueLayer) getAccountTransactions(url *url.URL, accessToken string, accountID string) (*[]Transaction, error) {
+func (t *TrueLayer) getAccountTransactions(url *url.URL, accessToken string, accountID string) ([]Transaction, error) {
 	res, err := t.doAuthorizedGetRequest(url, accessToken)
 
 	if err != nil {
@@ -282,7 +284,7 @@ func (t *TrueLayer) getAccountTransactions(url *url.URL, accessToken string, acc
 		return nil, err
 	}
 
-	return &transactionsResp.Results, nil
+	return transactionsResp.Results, nil
 }
 
 // GetAccountStandingOrders retrieves the specified account's standing orders
@@ -296,7 +298,7 @@ func (t *TrueLayer) getAccountTransactions(url *url.URL, accessToken string, acc
 // returns
 //   - the standing orders
 //   - errors from the api request
-func (t *TrueLayer) GetAccountStandingOrders(accessToken string, accountID string) (*[]StandingOrder, error) {
+func (t *TrueLayer) GetAccountStandingOrders(accessToken string, accountID string) ([]StandingOrder, error) {
 	u, err := buildURL(t.getBaseURL(), fmt.Sprintf(EndpointDataV1AccountStandingOrders, accountID))
 
 	if err != nil {
@@ -311,6 +313,9 @@ func (t *TrueLayer) GetAccountStandingOrders(accessToken string, accountID strin
 
 	defer res.Body.Close()
 
+	b, _ := io.ReadAll(res.Body)
+	log.Println(string(b))
+
 	if res.StatusCode >= 300 {
 		return nil, parseErrorResponse(res)
 	}
@@ -322,7 +327,7 @@ func (t *TrueLayer) GetAccountStandingOrders(accessToken string, accountID strin
 		return nil, err
 	}
 
-	return &standingOrderResp.Results, nil
+	return standingOrderResp.Results, nil
 }
 
 // GetAccountDirectDebits retrieves the specified account's direct debits this
@@ -335,7 +340,7 @@ func (t *TrueLayer) GetAccountStandingOrders(accessToken string, accountID strin
 // returns
 //   - the direct debits
 //   - errors from the api request
-func (t *TrueLayer) GetAccountDirectDebits(accessToken string, accountID string) (*[]DirectDebit, error) {
+func (t *TrueLayer) GetAccountDirectDebits(accessToken string, accountID string) ([]DirectDebit, error) {
 	u, err := buildURL(t.getBaseURL(), fmt.Sprintf(EndpointDataV1AccountDirectDebits, accountID))
 
 	if err != nil {
@@ -361,5 +366,5 @@ func (t *TrueLayer) GetAccountDirectDebits(accessToken string, accountID string)
 		return nil, err
 	}
 
-	return &directDebitResp.Results, nil
+	return directDebitResp.Results, nil
 }

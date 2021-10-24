@@ -1,7 +1,7 @@
 package main
 
 import (
-	"encoding/json"
+	"html/template"
 	"log"
 	"net/http"
 	"net/url"
@@ -13,10 +13,18 @@ import (
 
 type Config struct {
 	Host         string `env:"HOST,default=http://localhost:3000"`
-	RedirectPath string `env:"REDIRECT_PATH,default=/callback"`
+	RedirectPath string `env:"REDIRECT_PATH,default=/"`
 	ClientID     string `env:"TRUELAYER_CLIENT_ID,required=true"`
 	ClientSecret string `env:"TRUELAYER_CLIENT_SECRET,required=true"`
 	Sandbox      bool   `env:"TRUELAYER_SANDBOX,default=true"`
+}
+
+type TemplateData struct {
+	AccountID      string
+	Accounts       []truelayer.Account
+	Balance        *truelayer.Balance
+	Transactions   []truelayer.Transaction
+	StandingOrders []truelayer.StandingOrder
 }
 
 func main() {
@@ -34,114 +42,85 @@ func main() {
 	redirectURL.Path = config.RedirectPath
 
 	t := truelayer.New(config.ClientID, config.ClientSecret, config.Sandbox)
-	link, _ := t.GetAuthenticationLink([]string{providers.UKMock, providers.UKOAuthAll, providers.UKOpenBankingAll}, []string{truelayer.PermissionAll}, redirectURL, false)
+	link, _ := t.GetAuthenticationLink([]string{providers.UKMock, providers.UKOAuthAll, providers.UKOpenBankingAll}, []string{truelayer.PermissionAll}, redirectURL, true)
 
-	http.HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {
-		http.Redirect(rw, r, link, http.StatusMovedPermanently)
-	})
+	http.HandleFunc("/", handle(t, link, redirectURL))
 
-	http.HandleFunc(config.RedirectPath, handleCallback(t, redirectURL))
-	http.HandleFunc("/refresh", handleRefreshToken(t))
-	http.HandleFunc("/get", handleGet(t))
 	http.ListenAndServe(":"+redirectURL.Port(), nil)
 }
 
-func handleCallback(t *truelayer.TrueLayer, redirectURL *url.URL) func(rw http.ResponseWriter, r *http.Request) {
+func handle(t *truelayer.TrueLayer, redirectURL string, callbackURL *url.URL) func(http.ResponseWriter, *http.Request) {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		code := r.URL.Query().Get("code")
+		log.Println("Recieved Request")
+		if r.Method != http.MethodPost {
+			log.Println("Not Post - Redirecting")
+			http.Redirect(rw, r, redirectURL, http.StatusMovedPermanently)
+			return
+		}
 
+		log.Println("Post - Reading Body")
+		if r.Body == nil {
+			log.Println("no body")
+			rw.Write([]byte("no request body"))
+			return
+		}
+
+		log.Println("Parsing Form")
+		err := r.ParseForm()
+		if err != nil {
+			log.Println(err.Error())
+			rw.Write([]byte(err.Error()))
+			return
+		}
+
+		log.Println("Getting Code")
+		code := r.PostForm.Get("code")
 		if code == "" {
-			log.Println("No code")
-			return
+			log.Println("code is empty")
+			rw.Write([]byte("code is empty"))
 		}
 
-		token, err := t.GetAccessToken(code, redirectURL)
+		log.Println("Getting Access Token")
+		token, err := t.GetAccessToken(code, callbackURL)
 		if err != nil {
-			log.Println(err)
+			log.Println(err.Error())
+			rw.Write([]byte(err.Error()))
 			return
 		}
 
-		b, err := json.Marshal(token)
+		log.Println("Getting Accounts")
+		accounts, err := t.GetAccounts(token.AccessToken)
 		if err != nil {
+			log.Println(err.Error())
+			rw.Write([]byte(err.Error()))
 			return
 		}
 
-		rw.Write(b)
-	}
-}
-
-func handleRefreshToken(t *truelayer.TrueLayer) func(rw http.ResponseWriter, r *http.Request) {
-	return func(rw http.ResponseWriter, r *http.Request) {
-		refresh := r.URL.Query().Get("refresh")
-
-		if refresh == "" {
-			log.Println("No refresh token")
-			return
-		}
-
-		token, err := t.RefreshAccessToken(refresh)
+		log.Println("Getting Balance")
+		balance, err := t.GetAccountBalance(token.AccessToken, accounts[0].AccountID)
 		if err != nil {
-			log.Println(err)
+			log.Println(err.Error())
+			rw.Write([]byte(err.Error()))
 			return
 		}
 
-		b, err := json.Marshal(token)
+		log.Println("Getting Transactions")
+		transactions, err := t.GetAccountTransactions(token.AccessToken, accounts[0].AccountID)
 		if err != nil {
+			log.Println(err.Error())
+			rw.Write([]byte(err.Error()))
 			return
 		}
 
-		rw.Write(b)
-	}
-}
-
-func handleGet(t *truelayer.TrueLayer) func(rw http.ResponseWriter, r *http.Request) {
-	return func(rw http.ResponseWriter, r *http.Request) {
-		action := r.URL.Query().Get("action")
-		token := r.URL.Query().Get("token")
-		opt := r.URL.Query().Get("option")
-
-		if action == "" {
-			log.Println("No action")
-			return
+		log.Println("Generating HTML")
+		data := TemplateData{
+			AccountID:    accounts[0].AccountID,
+			Accounts:     accounts,
+			Balance:      balance,
+			Transactions: transactions[:10],
 		}
 
-		if token == "" {
-			log.Println("No token")
-			return
-		}
-
-		if opt == "" {
-			log.Println("No option")
-			return
-		}
-
-		switch action {
-		case "accounts":
-			accounts, err := t.GetAccounts(token)
-			if err != nil {
-				log.Println(err)
-				return
-			}
-
-			b, err := json.Marshal(accounts)
-			if err != nil {
-				return
-			}
-
-			rw.Write(b)
-		case "account":
-			account, err := t.GetAccount(token, opt)
-			if err != nil {
-				log.Println(err)
-				return
-			}
-
-			b, err := json.Marshal(account)
-			if err != nil {
-				return
-			}
-
-			rw.Write(b)
-		}
+		temp := template.Must(template.ParseFiles("examples/template.html"))
+		temp.Execute(rw, data)
 	}
 }

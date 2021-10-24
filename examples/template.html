@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>truelayer-go</title>
+</head>
+<body>
+  <main>
+    <h1><a href="/">truelayer-go</a></h1>
+    <p>Example use of truelayer-go. This page is rendered after logging in with TrueLayer.</p>
+    <hr>
+    <section>
+      <h2>GetAccounts</h2>
+      <table>
+        <thead>
+          <th>Account ID</th>
+          <th>Account Type</th>
+          <th>Display Name</th>
+        </thead>
+        {{ range .Accounts }}
+          <tr>
+            <td>{{ .AccountID }}</td>
+            <td>{{ .AccountType }}</td>
+            <td>{{ .DisplayName }}</td>
+          </tr>
+        {{ end }}
+      </table>
+    </section>
+    <hr>
+    <section>
+      <h2>GetAccountBalance</h2>
+      <p><strong>Account ID: </strong> {{ .AccountID }}</p>
+      <p><strong>Currency: </strong> {{ .Balance.Currency }}</p>
+      <p><strong>Available: </strong> {{ .Balance.Available }}</p>
+      <p><strong>Current: </strong> {{ .Balance.Current }}</p>
+      <p><strong>Overdraft: </strong> {{ .Balance.Overdraft }}</p>
+      <p><strong>UpdateTimestamp: </strong> {{ .Balance.UpdateTimestamp }}</p>
+    </section>
+    <hr>
+    <section>
+      <h2>GetAccountTransactions</h2>
+      <table>
+        <thead>
+          <th>TransactionID</th>
+          <th>Timestamp</th>
+          <th>Description</th>
+          <th>Amount</th>
+          <th>Currency</th>
+          <th>TransactionType</th>
+          <th>TransactionCategory</th>
+          <th>TransactionClassification</th>
+          <th>MerchantName</th>
+        </thead>
+        {{ range .Transactions }}
+          <tr>
+            <td>{{ .TransactionID }}</td>
+            <td>{{ .Timestamp }}</td>
+            <td>{{ .Description }}</td>
+            <td>{{ .Amount }}</td>
+            <td>{{ .Currency }}</td>
+            <td>{{ .TransactionType }}</td>
+            <td>{{ .TransactionCategory }}</td>
+            <td>{{ .TransactionClassification }}</td>
+            <td>{{ .MerchantName }}</td>
+          </tr>
+        {{ end }}
+      </table>
+	  </section>
+    <hr>
+    <section>
+      <h2>GetAccountStandingOrders</h2>
+      <table>
+        <thead>
+          <th>Frequency</th>
+          <th>Status</th>
+          <th>Timestamp</th>
+          <th>Currency</th>
+          <th>NextPaymentDate</th>
+          <th>NextPaymentAmount</th>
+          <th>Reference</th>
+          <th>Payee</th>
+        </thead>
+        {{ range .StandingOrders }}
+          <tr>
+            <td>{{ .Frequency }}</td>
+            <td>{{ .Status }}</td>
+            <td>{{ .Timestamp }}</td>
+            <td>{{ .Currency }}</td>
+            <td>{{ .NextPaymentDate }}</td>
+            <td>{{ .NextPaymentAmount }}</td>
+            <td>{{ .Reference }}</td>
+            <td>{{ .Payee }}</td>
+          </tr>
+        {{ end }}
+      </table>
+    </section>
+  </main>
+</body>
+</html>
