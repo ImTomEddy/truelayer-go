@@ -55,11 +55,29 @@ type Transaction struct {
 	RunningBalance                  struct {
 		Amount   float64 `json:"amount"`
 		Currency string  `json:"currency"`
-	} `json:"running_balance,omitempty"`
+	} `json:"running_balance"`
 	Meta struct {
 		BankTransactionID           string `json:"bank_transaction_id"`
 		ProviderTransactionCategory string `json:"provider_transaction_category"`
 	} `json:"meta"`
+}
+
+type StandingOrder struct {
+	Frequency string    `json:"frequency"`
+	Status    string    `json:"status"`
+	Timestamp time.Time `json:"timestamp"`
+	Currency  string    `json:"currency"`
+	Meta      struct {
+		ProviderAccountID string `json:"provider_account_id"`
+	} `json:"meta"`
+	NextPaymentDate    time.Time `json:"next_payment_date"`
+	NextPaymentAmount  int       `json:"next_payment_amount"`
+	FirstPaymentDate   time.Time `json:"first_payment_date"`
+	FirstPaymentAmount int       `json:"first_payment_amount"`
+	FinalPaymentDate   time.Time `json:"final_payment_date"`
+	FinalPaymentAmount int       `json:"final_payment_amount"`
+	Reference          string    `json:"reference"`
+	Payee              string    `json:"payee"`
 }
 
 // GetAccounts retrieves the account associated with the provided access token.
@@ -251,5 +269,44 @@ func (t *TrueLayer) getAccountTransactions(url *url.URL, accessToken string, acc
 	}
 
 	return &transactionsResp.Results, nil
+}
 
+// GetAccountStandingOrders retrieves the specified account's standing orders
+// this account must be associated to the provided accessToken or an error will
+// occur.
+//
+// params
+//   - accessToken - access token to get the account from
+//   - accountID - the account ID to get
+//
+// returns
+//   - the standing orders
+//   - errors from the api request
+func (t *TrueLayer) GetAccountStandingOrders(accessToken string, accountID string) (*[]StandingOrder, error) {
+	u, err := buildURL(t.getBaseURL(), fmt.Sprintf(EndpointDataV1AccountStandingOrders, accountID))
+
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := t.doAuthorizedGetRequest(u, accessToken)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer res.Body.Close()
+
+	if res.StatusCode >= 300 {
+		return nil, parseErrorResponse(res)
+	}
+
+	standingOrderResp := AccountStandingOrderResponse{}
+	err = json.NewDecoder(res.Body).Decode(&standingOrderResp)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &standingOrderResp.Results, nil
 }

@@ -36,3 +36,7 @@ type AccountBalanceResponse struct {
 type AccountTransactionsResponse struct {
 	Results []Transaction `json:"results"`
 }
+
+type AccountStandingOrderResponse struct {
+	Results []StandingOrder `json:"results"`
+}
