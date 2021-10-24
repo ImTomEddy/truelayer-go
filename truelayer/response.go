@@ -29,6 +29,10 @@ type AccountsResponse struct {
 	Results []Account `json:"results"`
 }
 
-type BalanceResponse struct {
+type AccountBalanceResponse struct {
 	Results []Balance `json:"results"`
+}
+
+type AccountTransactionsResponse struct {
+	Results []Transaction `json:"results"`
 }
