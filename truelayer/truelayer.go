@@ -14,6 +14,16 @@ type TrueLayer struct {
 	sandbox      bool
 }
 
+// New creates a new instance of the TrueLayer go client. This is done to allow
+// for mocking within user implementation to allow for greater test coverage.
+//
+// params
+//   - clientID - TrueLayer client_id
+//   - clientSecret - TrueLayer client_secret
+//   - sandbox - true if using the sandbox environment
+//
+// returns
+//   - instance of TrueLayer client
 func New(clientID, clientSecret string, sandbox bool) *TrueLayer {
 	return &TrueLayer{
 		clientID:     clientID,
