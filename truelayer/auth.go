@@ -7,65 +7,10 @@ import (
 	"strings"
 )
 
-const baseAuthURLSandbox = "https://auth.truelayer-sandbox.com"
-const baseAuthURL = "https://auth.truelayer.com"
+const authBaseURLSandbox = "https://auth.truelayer-sandbox.com"
+const authBaseURL = "https://auth.truelayer.com"
 
-type TrueLayer struct {
-	clientID     string
-	clientSecret string
-	sandbox      bool
-	httpClient   httpClient
-}
-
-// httpClient is an interface to define the methods required from any kind of
-// HTTP Client that will be used by the TrueLayer Client.
-type httpClient interface {
-	Do(req *http.Request) (*http.Response, error)
-}
-
-// AccessTokenResponse is the JSON Structure returned when requesting an
-// AccessToken from TrueLayer.
-type AccessTokenResponse struct {
-	AccessToken  string `json:"access_token"`
-	ExpiresIn    int    `json:"expires_in"`
-	TokenType    string `json:"token_type"`
-	RefreshToken string `json:"refresh_token"`
-}
-
-// New creates a new instance of the TrueLayer go client. This is done to allow
-// for mocking within user implementation to allow for greater test coverage.
-//
-// params
-//   - clientID - TrueLayer client_id
-//   - clientSecret - TrueLayer client_secret
-//   - sandbox - true if using the sandbox environment
-//
-// returns
-//   - instance of TrueLayer client
-func New(clientID, clientSecret string, sandbox bool) *TrueLayer {
-	return NewWithHTTPClient(clientID, clientSecret, sandbox, &http.Client{})
-}
-
-// NewWithHTTPClient creates a new instance of the TrueLayer go client, with a
-// custom HTTP Client. This is done to allow for mocking within user
-// implementation to allow for greater test coverage.
-//
-// params
-//   - clientID - TrueLayer client_id
-//   - clientSecret - TrueLayer client_secret
-//   - sandbox - true if using the sandbox environment
-//   - httpClient - custom HTTP client for the TrueLayer client to use
-//
-// returns
-//   - instance of TrueLayer client
-func NewWithHTTPClient(clientID, clientSecret string, sandbox bool, httpClient httpClient) *TrueLayer {
-	return &TrueLayer{
-		clientID:     clientID,
-		clientSecret: clientSecret,
-		sandbox:      sandbox,
-		httpClient:   httpClient,
-	}
-}
+const authTokenEndpoint = "/connect/token"
 
 // GetAuthenticationLink generates a link that can be used to authenticate
 // against multiple providers with a specific scope of permissions.
@@ -80,7 +25,7 @@ func NewWithHTTPClient(clientID, clientSecret string, sandbox bool, httpClient h
 //   - link - the authentication link
 //   - err - error parsing the base URL - should not occur
 func (t *TrueLayer) GetAuthenticationLink(providers []string, permissions []string, redirURI *url.URL, postCode bool) (link string, err error) {
-	u, err := t.getBaseAuthURL()
+	u, err := buildURL(t.getAuthBaseURL(), "")
 
 	if err != nil {
 		return link, err
@@ -111,30 +56,14 @@ func (t *TrueLayer) GetAuthenticationLink(providers []string, permissions []stri
 //
 // returns
 //   - token - access token
-//   - err - any errors that have occurred
+//   - err - any errors that have occurred including API errors
 func (t *TrueLayer) GetAccessToken(code string, redirURI *url.URL) (token *AccessTokenResponse, err error) {
-	u, err := t.getBaseAuthURL()
-	u.Path = "/connect/token"
-
 	body := t.getNewURLValuesWithClientInfo(true)
 	body.Add("grant_type", "authorization_code")
 	body.Add("redirect_uri", redirURI.String())
 	body.Add("code", code)
 
-	res, err := t.doRequestWithFormURLEncodedBody(http.MethodPost, u.String(), body)
-	if err != nil {
-		return token, err
-	}
-
-	defer res.Body.Close()
-
-	token = &AccessTokenResponse{}
-	err = json.NewDecoder(res.Body).Decode(token)
-	if err != nil {
-		return token, err
-	}
-
-	return token, err
+	return t.authDoTokenRequest(body)
 }
 
 // RefreshAccessToken takes a refresh token and returns a refreshed access token
@@ -145,28 +74,44 @@ func (t *TrueLayer) GetAccessToken(code string, redirURI *url.URL) (token *Acces
 //
 // returns
 //   - token - access token
-//   - err - any errors that have occurred
+//   - err - any errors that have occurred including API errors
 func (t *TrueLayer) RefreshAccessToken(refreshToken string) (token *AccessTokenResponse, err error) {
-	u, err := t.getBaseAuthURL()
-	u.Path = "/connect/token"
-
 	body := t.getNewURLValuesWithClientInfo(true)
 	body.Add("grant_type", "refresh_token")
 	body.Add("refresh_token", refreshToken)
 
+	return t.authDoTokenRequest(body)
+}
+
+// authDoTokenRequest builds and executes authentication requests for the
+// TrueLayer api.
+//
+// params
+//   - body - request payload
+//
+// returns
+//   - token - access token
+//   - err - any errors that have occurred including API errors
+func (t *TrueLayer) authDoTokenRequest(body url.Values) (token *AccessTokenResponse, err error) {
+	u, err := buildURL(t.getAuthBaseURL(), authTokenEndpoint)
+
+	if err != nil {
+		return nil, err
+	}
+
 	res, err := t.doRequestWithFormURLEncodedBody(http.MethodPost, u.String(), body)
 	if err != nil {
-		return token, err
+		return nil, err
 	}
 
 	defer res.Body.Close()
 
-	token = &AccessTokenResponse{}
-	err = json.NewDecoder(res.Body).Decode(token)
-	if err != nil {
-		return token, err
+	if res.StatusCode >= 300 {
+		return nil, parseErrorResponse(res)
 	}
 
+	token = &AccessTokenResponse{}
+	err = json.NewDecoder(res.Body).Decode(token)
 	return token, err
 }
 
@@ -225,17 +170,17 @@ func (t *TrueLayer) getURLValuesWithClientInfo(values url.Values, withSecret boo
 	return values
 }
 
-// getBaseAuthURL parses the baseAuthURL for either the sandbox or non-sandbox
+// getAuthBaseURL parses the baseAuthURL for either the sandbox or non-sandbox
 // TrueLayer environments and returns them. Using a utility method to reduce
 // code duplication.
 //
 // returns
 //   - the parsed url
 //   - url parsing errors - should not occur as these are hard-coded values
-func (t *TrueLayer) getBaseAuthURL() (*url.URL, error) {
+func (t *TrueLayer) getAuthBaseURL() string {
 	if t.sandbox {
-		return url.Parse(baseAuthURLSandbox)
+		return authBaseURLSandbox
 	}
 
-	return url.Parse(baseAuthURL)
+	return authBaseURL
 }
