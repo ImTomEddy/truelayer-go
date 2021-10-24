@@ -87,8 +87,7 @@ func (t *TrueLayer) GetAuthenticationLink(providers []string, permissions []stri
 		return link, err
 	}
 
-	q := u.Query()
-	q.Add("client_id", t.clientID)
+	q := t.getURLValuesWithClientInfo(u.Query(), false)
 	q.Add("response_type", "code")
 
 	q.Add("scope", strings.Join(permissions, " "))
@@ -118,21 +117,12 @@ func (t *TrueLayer) GetAccessToken(code string, redirURI *url.URL) (token *Acces
 	u, err := t.getBaseAuthURL()
 	u.Path = "/connect/token"
 
-	body := url.Values{}
+	body := t.getNewURLValuesWithClientInfo(true)
 	body.Add("grant_type", "authorization_code")
-	body.Add("client_id", t.clientID)
-	body.Add("client_secret", t.clientSecret)
 	body.Add("redirect_uri", redirURI.String())
 	body.Add("code", code)
 
-	req, err := http.NewRequest(http.MethodPost, u.String(), strings.NewReader(body.Encode()))
-	if err != nil {
-		return token, err
-	}
-
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-
-	res, err := t.httpClient.Do(req)
+	res, err := t.doRequestWithFormURLEncodedBody(http.MethodPost, u.String(), body)
 	if err != nil {
 		return token, err
 	}
@@ -147,6 +137,61 @@ func (t *TrueLayer) GetAccessToken(code string, redirURI *url.URL) (token *Acces
 	}
 
 	return token, err
+}
+
+// doRequestWithFormURLEncodedBody creates a HTTP request object with the
+// Content-Type header set to `application/x-www-form-urlencoded` which is used
+// in authentication requests.
+//
+// params
+//   - method - http request method
+//   - url - url to request
+//   - body - url.Values to be encoded for the request body
+//
+// returns
+//   - response from http request
+//   - any errors from creating the requests or executing the request
+func (t *TrueLayer) doRequestWithFormURLEncodedBody(method, url string, body url.Values) (*http.Response, error) {
+	req, err := http.NewRequest(method, url, strings.NewReader(body.Encode()))
+
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	return t.httpClient.Do(req)
+}
+
+// getNewURLValuesWithClientInfo creates a new url.Values object and injects it
+// with the TrueLayer client information.
+//
+// params
+//   - withSecret - inject client secret
+//
+// returns
+//   - a new url.Values with client info
+func (t *TrueLayer) getNewURLValuesWithClientInfo(withSecret bool) url.Values {
+	return t.getURLValuesWithClientInfo(url.Values{}, withSecret)
+}
+
+// getURLValuesWithClientInfo injects TrueLayer client information into the
+// provided url.Values object.
+//
+// params
+//   - values - existing url.Values object
+//   - withSecret - inject client secret
+//
+// returns
+//   - url.Values with client info
+func (t *TrueLayer) getURLValuesWithClientInfo(values url.Values, withSecret bool) url.Values {
+	values.Add("client_id", t.clientID)
+
+	if withSecret {
+		values.Add("client_secret", t.clientSecret)
+	}
+
+	return values
 }
 
 // getBaseAuthURL parses the baseAuthURL for either the sandbox or non-sandbox
