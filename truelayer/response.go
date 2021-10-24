@@ -40,3 +40,7 @@ type AccountTransactionsResponse struct {
 type AccountStandingOrderResponse struct {
 	Results []StandingOrder `json:"results"`
 }
+
+type AccountDirectDebitResponse struct {
+	Results []DirectDebit `json:"results"`
+}

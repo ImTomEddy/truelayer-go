@@ -80,6 +80,20 @@ type StandingOrder struct {
 	Payee              string    `json:"payee"`
 }
 
+type DirectDebit struct {
+	DirectDebitID            string    `json:"direct_debit_id"`
+	Timestamp                time.Time `json:"timestamp"`
+	Name                     string    `json:"name"`
+	Status                   string    `json:"status"`
+	PreviousPaymentTimestamp time.Time `json:"previous_payment_timestamp"`
+	PreviousPaymentAmount    int       `json:"previous_payment_amount"`
+	Currency                 string    `json:"currency"`
+	Meta                     struct {
+		ProviderMandateIdentification string `json:"provider_mandate_identification"`
+		ProviderAccountID             string `json:"provider_account_id"`
+	} `json:"meta"`
+}
+
 // GetAccounts retrieves the account associated with the provided access token.
 //
 // params
@@ -309,4 +323,43 @@ func (t *TrueLayer) GetAccountStandingOrders(accessToken string, accountID strin
 	}
 
 	return &standingOrderResp.Results, nil
+}
+
+// GetAccountDirectDebits retrieves the specified account's direct debits this
+//account must be associated to the provided accessToken or an error will occur.
+//
+// params
+//   - accessToken - access token to get the account from
+//   - accountID - the account ID to get
+//
+// returns
+//   - the direct debits
+//   - errors from the api request
+func (t *TrueLayer) GetAccountDirectDebits(accessToken string, accountID string) (*[]DirectDebit, error) {
+	u, err := buildURL(t.getBaseURL(), fmt.Sprintf(EndpointDataV1AccountDirectDebits, accountID))
+
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := t.doAuthorizedGetRequest(u, accessToken)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer res.Body.Close()
+
+	if res.StatusCode >= 300 {
+		return nil, parseErrorResponse(res)
+	}
+
+	directDebitResp := AccountDirectDebitResponse{}
+	err = json.NewDecoder(res.Body).Decode(&directDebitResp)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &directDebitResp.Results, nil
 }
