@@ -2,7 +2,6 @@ package truelayer
 
 import (
 	"fmt"
-	"time"
 )
 
 // ErrorResponse is a struct representation of the TrueLayer error response.
@@ -30,19 +29,6 @@ type AccountsResponse struct {
 	Results []Account `json:"results"`
 }
 
-type Account struct {
-	UpdateTimestamp time.Time `json:"update_timestamp"`
-	AccountID       string    `json:"account_id"`
-	AccountType     string    `json:"account_type"`
-	DisplayName     string    `json:"display_name"`
-	Currency        string    `json:"currency"`
-	AccountNumber   struct {
-		Iban     string `json:"iban"`
-		Number   string `json:"number"`
-		SortCode string `json:"sort_code"`
-		SwiftBic string `json:"swift_bic"`
-	} `json:"account_number"`
-	Provider struct {
-		ProviderID string `json:"provider_id"`
-	} `json:"provider"`
+type BalanceResponse struct {
+	Results []Balance `json:"results"`
 }
