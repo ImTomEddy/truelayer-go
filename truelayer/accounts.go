@@ -3,6 +3,7 @@ package truelayer
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"time"
 )
 
@@ -193,7 +194,44 @@ func (t *TrueLayer) GetAccountTransactions(accessToken string, accountID string)
 		return nil, err
 	}
 
-	res, err := t.doAuthorizedGetRequest(u, accessToken)
+	return t.getAccountTransactions(u, accessToken, accountID)
+}
+
+// GetAccountPendingTransactions retrieves the specified account's pending
+// transactions this account must be associated to the provided accessToken or
+// an error will occur.
+//
+// params
+//   - accessToken - access token to get the account from
+//   - accountID - the account ID to get
+//
+// returns
+//   - the transactions
+//   - errors from the api request
+func (t *TrueLayer) GetAccountPendingTransactions(accessToken string, accountID string) (*[]Transaction, error) {
+	u, err := buildURL(t.getBaseURL(), fmt.Sprintf(EndpointDataV1AccountPendingTransactions, accountID))
+
+	if err != nil {
+		return nil, err
+	}
+
+	return t.getAccountTransactions(u, accessToken, accountID)
+}
+
+// getAccountTransactions retrieves the specified account's transactions either
+// pending or not depending on the passed URL.
+//
+// params
+//   - url - the url to request
+//     (EndpointDataV1AccountTransactions|EndpointDataV1AccountPendingTransactions)
+//   - accessToken - access token to get the account from
+//   - accountID - the account ID to get
+//
+// returns
+//   - the transactions
+//   - errors from the api request
+func (t *TrueLayer) getAccountTransactions(url *url.URL, accessToken string, accountID string) (*[]Transaction, error) {
+	res, err := t.doAuthorizedGetRequest(url, accessToken)
 
 	if err != nil {
 		return nil, err
@@ -213,4 +251,5 @@ func (t *TrueLayer) GetAccountTransactions(accessToken string, accountID string)
 	}
 
 	return &transactionsResp.Results, nil
+
 }
