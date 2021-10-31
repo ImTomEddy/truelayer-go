@@ -26,3 +26,9 @@ type AccountStandingOrderResponse struct {
 type AccountDirectDebitResponse struct {
 	Results []AccountDirectDebit `json:"results"`
 }
+
+type AsyncRequestResponse struct {
+	ResultsURI string `json:"results_uri"`
+	Status     string `json:"status"`
+	TaskID     string `json:"task_id"`
+}

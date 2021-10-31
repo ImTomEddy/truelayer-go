@@ -138,6 +138,20 @@ func (t *TrueLayer) GetAccounts(accessToken string) ([]Account, error) {
 	return accountResp.Results, nil
 }
 
+// GetAccountsAsync triggers an async request to TrueLayer to get a list of all
+// accounts associated to the access token.
+//
+// params
+//   - accessToken - access token to get the info from
+//   - webhookURI - uri to access upon async job completion
+//
+// returns
+//   - truelayer response
+//   - errors from the api request
+func (t *TrueLayer) GetAccountsAsync(accessToken string, webhookURI string) (*AsyncRequestResponse, error) {
+	return t.doAsyncAccountRequest(EndpointDataV1Accounts, accessToken, webhookURI, nil)
+}
+
 // GetAccount retrieves the specified account based on accountID, this account
 // must be associated to the provided accessToken or an error will occur.
 //
@@ -175,6 +189,22 @@ func (t *TrueLayer) GetAccount(accessToken string, accountID string) (*Account, 
 	}
 
 	return &accountResp.Results[0], nil
+}
+
+// GetAccountAsync triggers an async request to TrueLayer to get the specified
+// account based on the accountID, this account must be associated to the
+// provided accessToken or an error will occur.
+//
+// params
+//   - accessToken - access token to get the info from
+//   - webhookURI - uri to access upon async job completion
+//   - accountID - id of the account to get
+//
+// returns
+//   - truelayer response
+//   - errors from the api request
+func (t *TrueLayer) GetAccountAsync(accessToken string, webhookURI string, accountID string) (*AsyncRequestResponse, error) {
+	return t.doAsyncAccountRequest(fmt.Sprintf(EndpointDataV1Account, accountID), accessToken, webhookURI, nil)
 }
 
 // GetAccountBalance retrieves the specified account's balance this account must
@@ -216,6 +246,22 @@ func (t *TrueLayer) GetAccountBalance(accessToken string, accountID string) (*Ac
 	return &balanceResp.Results[0], nil
 }
 
+// GetAccountBalanceAsync triggers an async request to TrueLayer to get the
+// specified account balance based on the accountID, this account must be
+// associated to the provided accessToken or an error will occur.
+//
+// params
+//   - accessToken - access token to get the info from
+//   - webhookURI - uri to access upon async job completion
+//   - accountID - id of the account to get
+//
+// returns
+//   - truelayer response
+//   - errors from the api request
+func (t *TrueLayer) GetAccountBalanceAsync(accessToken string, webhookURI string, accountID string) (*AsyncRequestResponse, error) {
+	return t.doAsyncAccountRequest(fmt.Sprintf(EndpointDataV1AccountBalance, accountID), accessToken, webhookURI, nil)
+}
+
 // GetAccountTransactions retrieves the specified account's transactions this
 // account must be associated to the provided accessToken or an error will occur.
 //
@@ -235,6 +281,23 @@ func (t *TrueLayer) GetAccountTransactions(accessToken string, accountID string,
 	}
 
 	return t.getAccountTransactions(u, accessToken, accountID, opts)
+}
+
+// GetAccountTransactionsAsync triggers an async request to TrueLayer to get the
+// specified account transactions based on the accountID, this account must be
+// associated to the provided accessToken or an error will occur.
+//
+// params
+//   - accessToken - access token to get the info from
+//   - webhookURI - uri to access upon async job completion
+//   - accountID - id of the account to get
+//   - opts - options for the request
+//
+// returns
+//   - truelayer response
+//   - errors from the api request
+func (t *TrueLayer) GetAccountTransactionsAsync(accessToken string, webhookURI string, accountID string, opts *AccountOptions) (*AsyncRequestResponse, error) {
+	return t.doAsyncAccountRequest(fmt.Sprintf(EndpointDataV1AccountTransactions, accountID), accessToken, webhookURI, opts)
 }
 
 // GetAccountPendingTransactions retrieves the specified account's pending
@@ -259,6 +322,24 @@ func (t *TrueLayer) GetAccountPendingTransactions(accessToken string, accountID 
 	return t.getAccountTransactions(u, accessToken, accountID, opts)
 }
 
+// GetAccountPendingTransactionsAsync triggers an async request to TrueLayer to
+// get the specified account pending transactions based on the accountID, this
+// account must be associated to the provided accessToken or an error will
+// occur.
+//
+// params
+//   - accessToken - access token to get the info from
+//   - webhookURI - uri to access upon async job completion
+//   - accountID - id of the account to get
+//   - opts - options for the request
+//
+// returns
+//   - truelayer response
+//   - errors from the api request
+func (t *TrueLayer) GetAccountPendingTransactionsAsync(accessToken string, webhookURI string, accountID string, opts *AccountOptions) (*AsyncRequestResponse, error) {
+	return t.doAsyncAccountRequest(fmt.Sprintf(EndpointDataV1AccountPendingTransactions, accountID), accessToken, webhookURI, opts)
+}
+
 // getAccountTransactions retrieves the specified account's transactions either
 // pending or not depending on the passed URL.
 //
@@ -274,7 +355,7 @@ func (t *TrueLayer) GetAccountPendingTransactions(accessToken string, accountID 
 //   - errors from the api request
 func (t *TrueLayer) getAccountTransactions(url *url.URL, accessToken string, accountID string, opts *AccountOptions) ([]AccountTransaction, error) {
 	if opts != nil {
-		if opts.From == nil && opts.To != nil || opts.To == nil && opts.From != nil {
+		if opts.From == nil || opts.To == nil {
 			return nil, ErrToFromNil
 		}
 
@@ -346,6 +427,22 @@ func (t *TrueLayer) GetAccountStandingOrders(accessToken string, accountID strin
 	return standingOrderResp.Results, nil
 }
 
+// GetAccountStandingOrdersAsync triggers an async request to TrueLayer to get
+// the specified account's standing orders based on the accountID, this account
+// must be associated to the provided accessToken or an error will occur.
+//
+// params
+//   - accessToken - access token to get the info from
+//   - webhookURI - uri to access upon async job completion
+//   - accountID - id of the account to get
+//
+// returns
+//   - truelayer response
+//   - errors from the api request
+func (t *TrueLayer) GetAccountStandingOrdersAsync(accessToken string, webhookURI string, accountID string) (*AsyncRequestResponse, error) {
+	return t.doAsyncAccountRequest(fmt.Sprintf(EndpointDataV1AccountStandingOrders, accountID), accessToken, webhookURI, nil)
+}
+
 // GetAccountDirectDebits retrieves the specified account's direct debits this
 //account must be associated to the provided accessToken or an error will occur.
 //
@@ -383,4 +480,72 @@ func (t *TrueLayer) GetAccountDirectDebits(accessToken string, accountID string)
 	}
 
 	return directDebitResp.Results, nil
+}
+
+// GetAccountDirectDebitsAsync triggers an async request to TrueLayer to get the
+// specified account's direct debits based on the accountID, this account must
+// be associated to the provided accessToken or an error will occur.
+//
+// params
+//   - accessToken - access token to get the info from
+//   - webhookURI - uri to access upon async job completion
+//   - accountID - id of the account to get
+//
+// returns
+//   - truelayer response
+//   - errors from the api request
+func (t *TrueLayer) GetAccountDirectDebitsAsync(accessToken string, webhookURI string, accountID string) (*AsyncRequestResponse, error) {
+	return t.doAsyncAccountRequest(fmt.Sprintf(EndpointDataV1AccountStandingOrders, accountID), accessToken, webhookURI, nil)
+}
+
+// doAsyncAccountRequest starts the process of getting account information
+// through TrueLayer's async function.
+//
+// params
+//   - endpoint - api endpoint to access
+//   - accessToken - access token to get the info from
+//   - webhookURI - uri to access upon async job completion
+//   - opts - any request options
+//
+// returns
+//   - truelayer response
+//   - errors from the api request
+func (t *TrueLayer) doAsyncAccountRequest(endpoint string, accessToken string, webhookURI string, opts *AccountOptions) (*AsyncRequestResponse, error) {
+	u, err := buildURL(t.getBaseURL(), endpoint)
+
+	if err != nil {
+		return nil, err
+	}
+
+	q := u.Query()
+	q.Add("async", "true")
+	q.Add("webhookURI", webhookURI)
+
+	if opts != nil {
+		if opts.From == nil || opts.To == nil {
+			return nil, ErrToFromNil
+		}
+
+		q.Add("to", opts.To.Format(time.RFC3339))
+		q.Add("from", opts.From.Format(time.RFC3339))
+	}
+
+	u.RawQuery = q.Encode()
+
+	res, err := t.doAuthorizedGetRequest(u, accessToken)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer res.Body.Close()
+
+	if res.StatusCode >= 300 {
+		return nil, parseErrorResponse(res)
+	}
+
+	resp := AsyncRequestResponse{}
+	err = json.NewDecoder(res.Body).Decode(&resp)
+
+	return &resp, err
 }
