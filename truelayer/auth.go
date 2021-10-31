@@ -7,10 +7,11 @@ import (
 	"strings"
 )
 
-const authBaseURLSandbox = "https://auth.truelayer-sandbox.com"
-const authBaseURL = "https://auth.truelayer.com"
-
-const authTokenEndpoint = "/connect/token"
+const (
+	authBaseURLSandbox = "https://auth.truelayer-sandbox.com"
+	authBaseURL        = "https://auth.truelayer.com"
+	authTokenEndpoint  = "/connect/token"
+)
 
 // GetAuthenticationLink generates a link that can be used to authenticate
 // against multiple providers with a specific scope of permissions.

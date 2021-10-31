@@ -14,8 +14,10 @@ type TrueLayer struct {
 	httpClient   httpClient
 }
 
-const baseURL = "https://api.truelayer.com"
-const baseSandboxURL = "https://api.truelayer-sandbox.com"
+const (
+	baseURL        = "https://api.truelayer.com"
+	baseSandboxURL = "https://api.truelayer-sandbox.com"
+)
 
 // httpClient is an interface to define the methods required from any kind of
 // HTTP Client that will be used by the TrueLayer Client.

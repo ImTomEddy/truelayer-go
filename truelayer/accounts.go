@@ -7,15 +7,17 @@ import (
 	"time"
 )
 
-const EndpointDataV1Accounts = "/data/v1/accounts"
-const EndpointDataV1Account = "/data/v1/accounts/%s"
-const EndpointDataV1AccountBalance = "/data/v1/accounts/%s/balance"
-const EndpointDataV1AccountTransactions = "/data/v1/accounts/%s/transactions"
-const EndpointDataV1AccountPendingTransactions = "/data/v1/accounts/%s/transactions/pending"
-const EndpointDataV1AccountStandingOrders = "/data/v1/accounts/%s/standing_orders"
-const EndpointDataV1AccountDirectDebits = "/data/v1/accounts/%s/direct_debits"
+const (
+	EndpointDataV1Accounts                   = "/data/v1/accounts"
+	EndpointDataV1Account                    = "/data/v1/accounts/%s"
+	EndpointDataV1AccountBalance             = "/data/v1/accounts/%s/balance"
+	EndpointDataV1AccountTransactions        = "/data/v1/accounts/%s/transactions"
+	EndpointDataV1AccountPendingTransactions = "/data/v1/accounts/%s/transactions/pending"
+	EndpointDataV1AccountStandingOrders      = "/data/v1/accounts/%s/standing_orders"
+	EndpointDataV1AccountDirectDebits        = "/data/v1/accounts/%s/direct_debits"
 
-const ErrToFromNil = StrError("to/from must not be nil")
+	ErrToFromNil = StrError("to/from must not be nil")
+)
 
 type Account struct {
 	UpdateTimestamp time.Time `json:"update_timestamp"`
