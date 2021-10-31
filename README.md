@@ -21,17 +21,18 @@ The hard-coded providers can be found under
   - [x] Access Token
   - [x] Refresh Token
 - [ ] Data API
-  - [ ] Async Support
-  - [ ] Correlation ID
-  - [ ] PSU-IP
   - [ ] Accounts
-    - [x] Get Accounts
-    - [x] Get Account
-    - [x] Get Account Balance
-    - [x] Get Account Transactions
-    - [x] Get Account Pending Transactions
-    - [x] Get Standing Orders
-    - [x] Get Direct Debits
+    - [ ] Async Support
+    - [ ] Correlation ID
+    - [ ] PSU-IP
+    - [x] Routes
+      - [x] Get Accounts
+      - [x] Get Account
+      - [x] Get Account Balance
+      - [x] Get Account Transactions
+      - [x] Get Account Pending Transactions
+      - [x] Get Standing Orders
+      - [x] Get Direct Debits
   - [ ] Batch
     - [ ] Initiate Batch Call
     - [ ] Get Data In Batch
