@@ -32,7 +32,7 @@ type Account struct {
 	} `json:"provider"`
 }
 
-type Balance struct {
+type AccountBalance struct {
 	Currency        string    `json:"currency"`
 	Available       float64   `json:"available"`
 	Current         float64   `json:"current"`
@@ -40,7 +40,7 @@ type Balance struct {
 	UpdateTimestamp time.Time `json:"update_timestamp"`
 }
 
-type Transaction struct {
+type AccountTransaction struct {
 	TransactionID                   string   `json:"transaction_id"`
 	NormalisedProviderTransactionID string   `json:"normalised_provider_transaction_id"`
 	ProviderTransactionID           string   `json:"provider_transaction_id"`
@@ -62,7 +62,7 @@ type Transaction struct {
 	} `json:"meta"`
 }
 
-type StandingOrder struct {
+type AccountStandingOrder struct {
 	Frequency string    `json:"frequency"`
 	Status    string    `json:"status"`
 	Timestamp time.Time `json:"timestamp"`
@@ -80,7 +80,7 @@ type StandingOrder struct {
 	Payee              string    `json:"payee"`
 }
 
-type DirectDebit struct {
+type AccountDirectDebit struct {
 	DirectDebitID            string    `json:"direct_debit_id"`
 	Timestamp                time.Time `json:"timestamp"`
 	Name                     string    `json:"name"`
@@ -180,7 +180,7 @@ func (t *TrueLayer) GetAccount(accessToken string, accountID string) (*Account, 
 // returns
 //   - the balance
 //   - errors from the api request
-func (t *TrueLayer) GetAccountBalance(accessToken string, accountID string) (*Balance, error) {
+func (t *TrueLayer) GetAccountBalance(accessToken string, accountID string) (*AccountBalance, error) {
 	u, err := buildURL(t.getBaseURL(), fmt.Sprintf(EndpointDataV1AccountBalance, accountID))
 
 	if err != nil {
@@ -219,7 +219,7 @@ func (t *TrueLayer) GetAccountBalance(accessToken string, accountID string) (*Ba
 // returns
 //   - the transactions
 //   - errors from the api request
-func (t *TrueLayer) GetAccountTransactions(accessToken string, accountID string) ([]Transaction, error) {
+func (t *TrueLayer) GetAccountTransactions(accessToken string, accountID string) ([]AccountTransaction, error) {
 	u, err := buildURL(t.getBaseURL(), fmt.Sprintf(EndpointDataV1AccountTransactions, accountID))
 
 	if err != nil {
@@ -240,7 +240,7 @@ func (t *TrueLayer) GetAccountTransactions(accessToken string, accountID string)
 // returns
 //   - the transactions
 //   - errors from the api request
-func (t *TrueLayer) GetAccountPendingTransactions(accessToken string, accountID string) ([]Transaction, error) {
+func (t *TrueLayer) GetAccountPendingTransactions(accessToken string, accountID string) ([]AccountTransaction, error) {
 	u, err := buildURL(t.getBaseURL(), fmt.Sprintf(EndpointDataV1AccountPendingTransactions, accountID))
 
 	if err != nil {
@@ -262,7 +262,7 @@ func (t *TrueLayer) GetAccountPendingTransactions(accessToken string, accountID 
 // returns
 //   - the transactions
 //   - errors from the api request
-func (t *TrueLayer) getAccountTransactions(url *url.URL, accessToken string, accountID string) ([]Transaction, error) {
+func (t *TrueLayer) getAccountTransactions(url *url.URL, accessToken string, accountID string) ([]AccountTransaction, error) {
 	res, err := t.doAuthorizedGetRequest(url, accessToken)
 
 	if err != nil {

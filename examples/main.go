@@ -22,9 +22,9 @@ type Config struct {
 type TemplateData struct {
 	AccountID      string
 	Accounts       []truelayer.Account
-	Balance        *truelayer.Balance
-	Transactions   []truelayer.Transaction
-	StandingOrders []truelayer.StandingOrder
+	Balance        *truelayer.AccountBalance
+	Transactions   []truelayer.AccountTransaction
+	StandingOrders []truelayer.AccountStandingOrder
 }
 
 func main() {

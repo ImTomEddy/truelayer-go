@@ -14,6 +14,8 @@ type ErrorResponse struct {
 
 // Error is a method implemented by all `error` interfaces. Implementing this
 // means that er can treat ErrorResponse as an error.
+//
+// TODO: Return a better and more helpful error message.
 func (res *ErrorResponse) Error() string {
 	return fmt.Sprintf("%s: %s", res.ErrorMessage, res.ErrorDescription)
 }
@@ -30,17 +32,17 @@ type AccountsResponse struct {
 }
 
 type AccountBalanceResponse struct {
-	Results []Balance `json:"results"`
+	Results []AccountBalance `json:"results"`
 }
 
 type AccountTransactionsResponse struct {
-	Results []Transaction `json:"results"`
+	Results []AccountTransaction `json:"results"`
 }
 
 type AccountStandingOrderResponse struct {
-	Results []StandingOrder `json:"results"`
+	Results []AccountStandingOrder `json:"results"`
 }
 
 type AccountDirectDebitResponse struct {
-	Results []DirectDebit `json:"results"`
+	Results []AccountDirectDebit `json:"results"`
 }
