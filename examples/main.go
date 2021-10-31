@@ -42,7 +42,7 @@ func main() {
 	redirectURL.Path = config.RedirectPath
 
 	t := truelayer.New(config.ClientID, config.ClientSecret, config.Sandbox)
-	link, _ := t.GetAuthenticationLink([]string{providers.UKMock, providers.UKOAuthAll, providers.UKOpenBankingAll}, []string{truelayer.PermissionAll}, redirectURL, true)
+	link, _ := t.GetAuthenticationLink([]string{providers.UKMock, providers.UKOAuthAll, providers.UKOpenBankingAll}, []string{truelayer.PermissionAll}, redirectURL, false)
 
 	http.HandleFunc("/", handle(t, link, redirectURL))
 

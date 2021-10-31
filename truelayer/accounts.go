@@ -11,9 +11,9 @@ const EndpointDataV1Accounts = "/data/v1/accounts"
 const EndpointDataV1Account = "/data/v1/accounts/%s"
 const EndpointDataV1AccountBalance = "/data/v1/accounts/%s/balance"
 const EndpointDataV1AccountTransactions = "/data/v1/accounts/%s/transactions"
-const EndpointDataV1AccountPendingTransactions = "/data/v1/accounts/%s/pending-transactions"
-const EndpointDataV1AccountStandingOrders = "/data/v1/accounts/%s/standing-orders"
-const EndpointDataV1AccountDirectDebits = "/data/v1/accounts/%s/direct-debits"
+const EndpointDataV1AccountPendingTransactions = "/data/v1/accounts/%s/transactions/pending"
+const EndpointDataV1AccountStandingOrders = "/data/v1/accounts/%s/standing_orders"
+const EndpointDataV1AccountDirectDebits = "/data/v1/accounts/%s/direct_debits"
 
 type Account struct {
 	UpdateTimestamp time.Time `json:"update_timestamp"`
