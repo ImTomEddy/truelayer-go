@@ -106,7 +106,7 @@ func handle(t *truelayer.TrueLayer, redirectURL string, callbackURL *url.URL) fu
 		}
 
 		log.Println("Getting Transactions")
-		transactions, err := t.GetAccountTransactions(token.AccessToken, accounts[0].AccountID)
+		transactions, err := t.GetAccountTransactions(token.AccessToken, accounts[0].AccountID, nil)
 		if err != nil {
 			log.Println(err.Error())
 			rw.Write([]byte(err.Error()))

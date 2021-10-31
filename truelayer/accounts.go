@@ -15,6 +15,8 @@ const EndpointDataV1AccountPendingTransactions = "/data/v1/accounts/%s/transacti
 const EndpointDataV1AccountStandingOrders = "/data/v1/accounts/%s/standing_orders"
 const EndpointDataV1AccountDirectDebits = "/data/v1/accounts/%s/direct_debits"
 
+const ErrToFromNil = StrError("to/from must not be nil")
+
 type Account struct {
 	UpdateTimestamp time.Time `json:"update_timestamp"`
 	AccountID       string    `json:"account_id"`
@@ -92,6 +94,11 @@ type AccountDirectDebit struct {
 		ProviderMandateIdentification string `json:"provider_mandate_identification"`
 		ProviderAccountID             string `json:"provider_account_id"`
 	} `json:"meta"`
+}
+
+type AccountTransactionOptions struct {
+	To   *time.Time
+	From *time.Time
 }
 
 // GetAccounts retrieves the account associated with the provided access token.
@@ -215,18 +222,19 @@ func (t *TrueLayer) GetAccountBalance(accessToken string, accountID string) (*Ac
 // params
 //   - accessToken - access token to get the account from
 //   - accountID - the account ID to get
+//   - opts - options for the request
 //
 // returns
 //   - the transactions
 //   - errors from the api request
-func (t *TrueLayer) GetAccountTransactions(accessToken string, accountID string) ([]AccountTransaction, error) {
+func (t *TrueLayer) GetAccountTransactions(accessToken string, accountID string, opts *AccountTransactionOptions) ([]AccountTransaction, error) {
 	u, err := buildURL(t.getBaseURL(), fmt.Sprintf(EndpointDataV1AccountTransactions, accountID))
 
 	if err != nil {
 		return nil, err
 	}
 
-	return t.getAccountTransactions(u, accessToken, accountID)
+	return t.getAccountTransactions(u, accessToken, accountID, opts)
 }
 
 // GetAccountPendingTransactions retrieves the specified account's pending
@@ -236,18 +244,19 @@ func (t *TrueLayer) GetAccountTransactions(accessToken string, accountID string)
 // params
 //   - accessToken - access token to get the account from
 //   - accountID - the account ID to get
+//   - opts - options for the request
 //
 // returns
 //   - the transactions
 //   - errors from the api request
-func (t *TrueLayer) GetAccountPendingTransactions(accessToken string, accountID string) ([]AccountTransaction, error) {
+func (t *TrueLayer) GetAccountPendingTransactions(accessToken string, accountID string, opts *AccountTransactionOptions) ([]AccountTransaction, error) {
 	u, err := buildURL(t.getBaseURL(), fmt.Sprintf(EndpointDataV1AccountPendingTransactions, accountID))
 
 	if err != nil {
 		return nil, err
 	}
 
-	return t.getAccountTransactions(u, accessToken, accountID)
+	return t.getAccountTransactions(u, accessToken, accountID, opts)
 }
 
 // getAccountTransactions retrieves the specified account's transactions either
@@ -258,11 +267,23 @@ func (t *TrueLayer) GetAccountPendingTransactions(accessToken string, accountID 
 //     (EndpointDataV1AccountTransactions|EndpointDataV1AccountPendingTransactions)
 //   - accessToken - access token to get the account from
 //   - accountID - the account ID to get
+//   - opts - options for the request
 //
 // returns
 //   - the transactions
 //   - errors from the api request
-func (t *TrueLayer) getAccountTransactions(url *url.URL, accessToken string, accountID string) ([]AccountTransaction, error) {
+func (t *TrueLayer) getAccountTransactions(url *url.URL, accessToken string, accountID string, opts *AccountTransactionOptions) ([]AccountTransaction, error) {
+	if opts != nil {
+		if opts.From == nil && opts.To != nil || opts.To == nil && opts.From != nil {
+			return nil, ErrToFromNil
+		}
+
+		q := url.Query()
+		q.Add("to", opts.To.Format(time.RFC3339))
+		q.Add("from", opts.From.Format(time.RFC3339))
+		url.RawQuery = q.Encode()
+	}
+
 	res, err := t.doAuthorizedGetRequest(url, accessToken)
 
 	if err != nil {

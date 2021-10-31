@@ -28,14 +28,8 @@ The hard-coded providers can be found under
     - [x] Get Accounts
     - [x] Get Account
     - [x] Get Account Balance
-    - [ ] Get Account Transactions  
-      Missing  
-      -  to
-      -  from
-    - [ ] Get Account Pending Transactions  
-      Missing  
-      - to
-      - from 
+    - [x] Get Account Transactions
+    - [x] Get Account Pending Transactions
     - [x] Get Standing Orders
     - [x] Get Direct Debits
   - [ ] Batch
