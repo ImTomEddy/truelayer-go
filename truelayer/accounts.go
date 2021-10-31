@@ -96,7 +96,7 @@ type AccountDirectDebit struct {
 	} `json:"meta"`
 }
 
-type AccountTransactionOptions struct {
+type AccountOptions struct {
 	To   *time.Time
 	From *time.Time
 }
@@ -227,7 +227,7 @@ func (t *TrueLayer) GetAccountBalance(accessToken string, accountID string) (*Ac
 // returns
 //   - the transactions
 //   - errors from the api request
-func (t *TrueLayer) GetAccountTransactions(accessToken string, accountID string, opts *AccountTransactionOptions) ([]AccountTransaction, error) {
+func (t *TrueLayer) GetAccountTransactions(accessToken string, accountID string, opts *AccountOptions) ([]AccountTransaction, error) {
 	u, err := buildURL(t.getBaseURL(), fmt.Sprintf(EndpointDataV1AccountTransactions, accountID))
 
 	if err != nil {
@@ -249,7 +249,7 @@ func (t *TrueLayer) GetAccountTransactions(accessToken string, accountID string,
 // returns
 //   - the transactions
 //   - errors from the api request
-func (t *TrueLayer) GetAccountPendingTransactions(accessToken string, accountID string, opts *AccountTransactionOptions) ([]AccountTransaction, error) {
+func (t *TrueLayer) GetAccountPendingTransactions(accessToken string, accountID string, opts *AccountOptions) ([]AccountTransaction, error) {
 	u, err := buildURL(t.getBaseURL(), fmt.Sprintf(EndpointDataV1AccountPendingTransactions, accountID))
 
 	if err != nil {
@@ -272,7 +272,7 @@ func (t *TrueLayer) GetAccountPendingTransactions(accessToken string, accountID 
 // returns
 //   - the transactions
 //   - errors from the api request
-func (t *TrueLayer) getAccountTransactions(url *url.URL, accessToken string, accountID string, opts *AccountTransactionOptions) ([]AccountTransaction, error) {
+func (t *TrueLayer) getAccountTransactions(url *url.URL, accessToken string, accountID string, opts *AccountOptions) ([]AccountTransaction, error) {
 	if opts != nil {
 		if opts.From == nil && opts.To != nil || opts.To == nil && opts.From != nil {
 			return nil, ErrToFromNil
