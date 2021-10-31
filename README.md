@@ -28,12 +28,12 @@ The hard-coded providers can be found under
     - [x] Get Accounts
     - [x] Get Account
     - [x] Get Account Balance
-    - [ ] Get Account Transactions
-      Missing
+    - [ ] Get Account Transactions  
+      Missing  
       -  to
       -  from
-    - [ ] Get Account Pending Transactions
-      Missing
+    - [ ] Get Account Pending Transactions  
+      Missing  
       - to
       - from 
     - [ ] Get Standing Orders
