@@ -25,6 +25,7 @@ type TemplateData struct {
 	Balance        *truelayer.AccountBalance
 	Transactions   []truelayer.AccountTransaction
 	StandingOrders []truelayer.AccountStandingOrder
+	DirectDebits   []truelayer.AccountDirectDebit
 }
 
 func main() {
@@ -120,6 +121,14 @@ func handle(t *truelayer.TrueLayer, redirectURL string, callbackURL *url.URL) fu
 			return
 		}
 
+		log.Println("Getting Direct Debits")
+		directDebits, err := t.GetAccountDirectDebits(token.AccessToken, accounts[0].AccountID)
+		if err != nil {
+			log.Println(err.Error())
+			rw.Write([]byte(err.Error()))
+			return
+		}
+
 		log.Println("Generating HTML")
 		data := TemplateData{
 			AccountID:      accounts[0].AccountID,
@@ -127,6 +136,7 @@ func handle(t *truelayer.TrueLayer, redirectURL string, callbackURL *url.URL) fu
 			Balance:        balance,
 			Transactions:   transactions[:10],
 			StandingOrders: standingOrders,
+			DirectDebits:   directDebits,
 		}
 
 		temp := template.Must(template.ParseFiles("examples/template.html"))

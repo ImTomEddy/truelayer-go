@@ -96,6 +96,32 @@
         {{ end }}
       </table>
     </section>
+    <hr>
+    <section>
+      <h2>GetAccountDirectDebits</h2>
+      <table>
+        <thead>
+          <th>DirectDebitID</th>
+          <th>Timestamp</th>
+          <th>Name</th>
+          <th>Status</th>
+          <th>PreviousPaymentTimestamp</th>
+          <th>PreviousPaymentAmount</th>
+          <th>Currency</th>
+        </thead>
+        {{ range .DirectDebits }}
+          <tr>
+            <td>{{ .DirectDebitID }}</td>
+            <td>{{ .Timestamp }}</td>
+            <td>{{ .Name }}</td>
+            <td>{{ .Status }}</td>
+            <td>{{ .PreviousPaymentTimestamp }}</td>
+            <td>{{ .PreviousPaymentAmount }}</td>
+            <td>{{ .Currency }}</td>
+          </tr>
+        {{ end }}
+      </table>
+    </section>
   </main>
 </body>
 </html>

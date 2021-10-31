@@ -37,7 +37,7 @@ The hard-coded providers can be found under
       - to
       - from 
     - [x] Get Standing Orders
-    - [ ] Get Direct Debits
+    - [x] Get Direct Debits
   - [ ] Batch
     - [ ] Initiate Batch Call
     - [ ] Get Data In Batch

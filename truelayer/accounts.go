@@ -86,7 +86,7 @@ type AccountDirectDebit struct {
 	Name                     string    `json:"name"`
 	Status                   string    `json:"status"`
 	PreviousPaymentTimestamp time.Time `json:"previous_payment_timestamp"`
-	PreviousPaymentAmount    int       `json:"previous_payment_amount"`
+	PreviousPaymentAmount    float64   `json:"previous_payment_amount"`
 	Currency                 string    `json:"currency"`
 	Meta                     struct {
 		ProviderMandateIdentification string `json:"provider_mandate_identification"`
@@ -335,31 +335,31 @@ func (t *TrueLayer) GetAccountStandingOrders(accessToken string, accountID strin
 // returns
 //   - the direct debits
 //   - errors from the api request
-// func (t *TrueLayer) GetAccountDirectDebits(accessToken string, accountID string) ([]DirectDebit, error) {
-// 	u, err := buildURL(t.getBaseURL(), fmt.Sprintf(EndpointDataV1AccountDirectDebits, accountID))
+func (t *TrueLayer) GetAccountDirectDebits(accessToken string, accountID string) ([]AccountDirectDebit, error) {
+	u, err := buildURL(t.getBaseURL(), fmt.Sprintf(EndpointDataV1AccountDirectDebits, accountID))
 
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	if err != nil {
+		return nil, err
+	}
 
-// 	res, err := t.doAuthorizedGetRequest(u, accessToken)
+	res, err := t.doAuthorizedGetRequest(u, accessToken)
 
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	if err != nil {
+		return nil, err
+	}
 
-// 	defer res.Body.Close()
+	defer res.Body.Close()
 
-// 	if res.StatusCode >= 300 {
-// 		return nil, parseErrorResponse(res)
-// 	}
+	if res.StatusCode >= 300 {
+		return nil, parseErrorResponse(res)
+	}
 
-// 	directDebitResp := AccountDirectDebitResponse{}
-// 	err = json.NewDecoder(res.Body).Decode(&directDebitResp)
+	directDebitResp := AccountDirectDebitResponse{}
+	err = json.NewDecoder(res.Body).Decode(&directDebitResp)
 
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	if err != nil {
+		return nil, err
+	}
 
-// 	return directDebitResp.Results, nil
-// }
+	return directDebitResp.Results, nil
+}
