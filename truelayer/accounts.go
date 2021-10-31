@@ -296,37 +296,34 @@ func (t *TrueLayer) getAccountTransactions(url *url.URL, accessToken string, acc
 // returns
 //   - the standing orders
 //   - errors from the api request
-// func (t *TrueLayer) GetAccountStandingOrders(accessToken string, accountID string) ([]StandingOrder, error) {
-// 	u, err := buildURL(t.getBaseURL(), fmt.Sprintf(EndpointDataV1AccountStandingOrders, accountID))
+func (t *TrueLayer) GetAccountStandingOrders(accessToken string, accountID string) ([]AccountStandingOrder, error) {
+	u, err := buildURL(t.getBaseURL(), fmt.Sprintf(EndpointDataV1AccountStandingOrders, accountID))
 
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	if err != nil {
+		return nil, err
+	}
 
-// 	res, err := t.doAuthorizedGetRequest(u, accessToken)
+	res, err := t.doAuthorizedGetRequest(u, accessToken)
 
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	if err != nil {
+		return nil, err
+	}
 
-// 	defer res.Body.Close()
+	defer res.Body.Close()
 
-// 	b, _ := io.ReadAll(res.Body)
-// 	log.Println(string(b))
+	if res.StatusCode >= 300 {
+		return nil, parseErrorResponse(res)
+	}
 
-// 	if res.StatusCode >= 300 {
-// 		return nil, parseErrorResponse(res)
-// 	}
+	standingOrderResp := AccountStandingOrderResponse{}
+	err = json.NewDecoder(res.Body).Decode(&standingOrderResp)
 
-// 	standingOrderResp := AccountStandingOrderResponse{}
-// 	err = json.NewDecoder(res.Body).Decode(&standingOrderResp)
+	if err != nil {
+		return nil, err
+	}
 
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	return standingOrderResp.Results, nil
-// }
+	return standingOrderResp.Results, nil
+}
 
 // GetAccountDirectDebits retrieves the specified account's direct debits this
 //account must be associated to the provided accessToken or an error will occur.

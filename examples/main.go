@@ -42,7 +42,7 @@ func main() {
 	redirectURL.Path = config.RedirectPath
 
 	t := truelayer.New(config.ClientID, config.ClientSecret, config.Sandbox)
-	link, _ := t.GetAuthenticationLink([]string{providers.UKMock, providers.UKOAuthAll, providers.UKOpenBankingAll}, []string{truelayer.PermissionAll}, redirectURL, false)
+	link, _ := t.GetAuthenticationLink([]string{providers.UKMock, providers.UKOAuthAll, providers.UKOpenBankingAll}, []string{truelayer.PermissionAll}, redirectURL, true)
 
 	http.HandleFunc("/", handle(t, link, redirectURL))
 
@@ -112,12 +112,21 @@ func handle(t *truelayer.TrueLayer, redirectURL string, callbackURL *url.URL) fu
 			return
 		}
 
+		log.Println("Getting Standing Orders")
+		standingOrders, err := t.GetAccountStandingOrders(token.AccessToken, accounts[0].AccountID)
+		if err != nil {
+			log.Println(err.Error())
+			rw.Write([]byte(err.Error()))
+			return
+		}
+
 		log.Println("Generating HTML")
 		data := TemplateData{
-			AccountID:    accounts[0].AccountID,
-			Accounts:     accounts,
-			Balance:      balance,
-			Transactions: transactions[:10],
+			AccountID:      accounts[0].AccountID,
+			Accounts:       accounts,
+			Balance:        balance,
+			Transactions:   transactions[:10],
+			StandingOrders: standingOrders,
 		}
 
 		temp := template.Must(template.ParseFiles("examples/template.html"))
