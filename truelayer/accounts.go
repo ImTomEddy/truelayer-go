@@ -118,6 +118,46 @@ func (t *TrueLayer) GetAccounts(accessToken string) ([]Account, error) {
 		return nil, err
 	}
 
+	return t.getAccounts(u, accessToken)
+}
+
+// GetAccountsAsync triggers an async request to TrueLayer to get a list of all
+// accounts associated to the access token.
+//
+// params
+//   - accessToken - access token to get the info from
+//   - webhookURI - uri to access upon async job completion
+//
+// returns
+//   - truelayer response
+//   - errors from the api request
+func (t *TrueLayer) GetAccountsAsync(accessToken string, webhookURI string) (*AsyncRequestResponse, error) {
+	return t.doAsyncAccountRequest(EndpointDataV1Accounts, accessToken, webhookURI, nil)
+}
+
+// GetAccountsAsyncRequest takes the result from a Webhook request and sends a
+// request to the correct endpoint to fetch the Accounts.
+//
+// params
+//   - accessToken - the access token associated to the webhook request
+//   - webhook - the webhook request to fetch data from
+func (t *TrueLayer) GetAccountsAsyncRequest(accessToken string, webhook *WebhookRequest) ([]Account, error) {
+	u, err := buildURL(t.getBaseURL(), fmt.Sprintf(EndpointDataV1Results, webhook.TaskID))
+
+	if err != nil {
+		return nil, err
+	}
+
+	return t.getAccounts(u, accessToken)
+}
+
+// getAccounts takes the Account data URL then does an authenticated GET request
+// decoding the response and returning the correct data structure.
+//
+// params
+//   - u - the URL to request
+//   - accessToken - the account's associated access token
+func (t *TrueLayer) getAccounts(u *url.URL, accessToken string) ([]Account, error) {
 	res, err := t.doAuthorizedGetRequest(u, accessToken)
 
 	if err != nil {
@@ -138,20 +178,6 @@ func (t *TrueLayer) GetAccounts(accessToken string) ([]Account, error) {
 	}
 
 	return accountResp.Results, nil
-}
-
-// GetAccountsAsync triggers an async request to TrueLayer to get a list of all
-// accounts associated to the access token.
-//
-// params
-//   - accessToken - access token to get the info from
-//   - webhookURI - uri to access upon async job completion
-//
-// returns
-//   - truelayer response
-//   - errors from the api request
-func (t *TrueLayer) GetAccountsAsync(accessToken string, webhookURI string) (*AsyncRequestResponse, error) {
-	return t.doAsyncAccountRequest(EndpointDataV1Accounts, accessToken, webhookURI, nil)
 }
 
 // GetAccount retrieves the specified account based on accountID, this account

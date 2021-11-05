@@ -19,6 +19,8 @@ const (
 	baseURL        = "https://api.truelayer.com"
 	baseSandboxURL = "https://api.truelayer-sandbox.com"
 
+	EndpointDataV1Results = "/data/v1/results/%s"
+
 	ErrRequestBodyNil = StrError("request body is nil")
 )
 
@@ -175,6 +177,13 @@ func (t *TrueLayer) HandleAsyncWebhookRequestBody(body io.ReadCloser) (*WebhookR
 
 	if err != nil {
 		return nil, err
+	}
+
+	if req.Status == "Failed" {
+		return req, &ErrorResponse{
+			ErrorMessage:     req.Error,
+			ErrorDescription: req.ErrorDescription,
+		}
 	}
 
 	return req, nil
