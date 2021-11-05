@@ -1,5 +1,18 @@
 package truelayer
 
+import "time"
+
+type WebhookRequest struct {
+	RequestTimestamp time.Time `json:"request_timestamp"`
+	RequestURI       string    `json:"request_uri"`
+	CredentialsID    string    `json:"credentials_id"`
+	TaskID           string    `json:"task_id"`
+	Status           string    `json:"status"`
+	ResultsURI       string    `json:"results_uri"`
+	ErrorDescription string    `json:"error_description"`
+	Error            string    `json:"error"`
+}
+
 type AccessTokenResponse struct {
 	AccessToken  string `json:"access_token"`
 	ExpiresIn    int    `json:"expires_in"`

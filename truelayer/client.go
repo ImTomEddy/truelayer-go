@@ -3,6 +3,7 @@ package truelayer
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 )
@@ -17,6 +18,8 @@ type TrueLayer struct {
 const (
 	baseURL        = "https://api.truelayer.com"
 	baseSandboxURL = "https://api.truelayer-sandbox.com"
+
+	ErrRequestBodyNil = StrError("request body is nil")
 )
 
 // httpClient is an interface to define the methods required from any kind of
@@ -135,4 +138,44 @@ func (t *TrueLayer) getBaseURL() string {
 	}
 
 	return baseURL
+}
+
+// HandleAsyncWebhookRequest will take an HTTP request and return the
+// WebhookRequest object or an error. This is used as a part of the async flow
+// for the TrueLayer api.
+//
+// params
+//   - req - the http request to handle
+//
+// returns
+//   - the webhook request
+//   - error if an error occurs
+func (t *TrueLayer) HandleAsyncWebhookRequest(req *http.Request) (*WebhookRequest, error) {
+	if req.Body == nil {
+		return nil, ErrRequestBodyNil
+	}
+
+	return nil, nil
+}
+
+// HandleAsyncWebhookRequestBody will take an io.ReadCloser and return the
+// WebhookRequest object or an error. This is used as a part of the async flow
+// for the TrueLayer api.
+//
+// params
+//   - body - the readcloser to decode
+//
+// returns
+//   - the webhook request
+//   - error if an error occurs
+func (t *TrueLayer) HandleAsyncWebhookRequestBody(body io.ReadCloser) (*WebhookRequest, error) {
+	req := &WebhookRequest{}
+
+	err := json.NewDecoder(body).Decode(req)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
 }
