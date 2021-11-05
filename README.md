@@ -5,14 +5,24 @@ An unofficial TrueLayer SDK for Go
 - [truelayer-go](#truelayer-go)
   - [Contents](#contents)
   - [Usage](#usage)
+    - [Synchronous](#synchronous)
   - [Supported Providers](#supported-providers)
   - [Supported Features](#supported-features)
 
 This SDK only has plans to support the TrueLayer Data API
 
 ## Usage
-An example of how to use the truelayer-go SDK can be found in the 
-[examples](examples/) directory.
+### Synchronous
+A Synchronous example of the truelayer-go SDK can be found within the
+[examples](examples/) directory. To run this example you will need to export two
+environment variables `TRUELAYER_CLIENT_ID` and `TRUELAYER_CLIENT_SECRET`. These
+variables should be the sandbox mode variables - the example wasn't built using 
+the live mode.
+
+With the example application running you can go to `http://localhost:3000` which
+will redirect you to the TrueLayer authentication page. Once authenticated 
+(user: `john`, password: `doe`) you will be redirected back to localhost using a
+`POST` request.
 
 The README will be updated to include more in-depth usage instructions soon.
 
