@@ -1,6 +1,13 @@
 # truelayer-go
 An unofficial TrueLayer SDK for Go
 
+## Contents
+- [truelayer-go](#truelayer-go)
+  - [Contents](#contents)
+  - [Usage](#usage)
+  - [Supported Providers](#supported-providers)
+  - [Supported Features](#supported-features)
+
 This SDK only has plans to support the TrueLayer Data API
 
 ## Usage
