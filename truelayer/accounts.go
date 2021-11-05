@@ -532,7 +532,7 @@ func (t *TrueLayer) GetAccountDirectDebitsAsync(accessToken string, webhookURI s
 // params
 //   - endpoint - api endpoint to access
 //   - accessToken - access token to get the info from
-//   - webhookURI - uri to access upon async job completion
+//   - webhookURI - uri to access upon async job completion (optional)
 //   - opts - any request options
 //
 // returns

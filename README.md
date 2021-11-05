@@ -6,12 +6,15 @@ An unofficial TrueLayer SDK for Go
   - [Contents](#contents)
   - [Usage](#usage)
     - [Synchronous](#synchronous)
+    - [Asynchronous](#asynchronous)
   - [Supported Providers](#supported-providers)
   - [Supported Features](#supported-features)
 
 This SDK only has plans to support the TrueLayer Data API
 
 ## Usage
+The README will be updated to include more in-depth usage instructions soon.
+
 ### Synchronous
 A Synchronous example of the truelayer-go SDK can be found within the
 [examples](examples/) directory. To run this example you will need to export two
@@ -24,7 +27,16 @@ will redirect you to the TrueLayer authentication page. Once authenticated
 (user: `john`, password: `doe`) you will be redirected back to localhost using a
 `POST` request.
 
-The README will be updated to include more in-depth usage instructions soon.
+### Asynchronous
+TrueLayer recommends using the asynchronous API over the synchronous API this is
+because it can help mitigate issues that are beyond TrueLayer's control. It also
+means that the user has to impliment less retry logic.
+
+Read more at https://docs.truelayer.com/docs/asynchronous-calls-and-webhooks
+
+The current working asynchronous implementation is using webhooks. There is also
+the ability to poll an asynchronous request but this is yet to be implemented.
+
 
 ## Supported Providers
 truelayer-go doesn't inherently limit the providers that can be used however, 
@@ -40,6 +52,8 @@ The hard-coded providers can be found under
 - [ ] Data API
   - [ ] Accounts
     - [ ] Async Support
+      - [ ] Webhook
+      - [ ] Polling
     - [ ] Correlation ID
     - [ ] PSU-IP
     - [x] Routes
