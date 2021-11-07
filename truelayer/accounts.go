@@ -197,26 +197,13 @@ func (t *TrueLayer) GetAccount(accessToken string, accountID string) (*Account, 
 		return nil, err
 	}
 
-	res, err := t.doAuthorizedGetRequest(u, accessToken)
+	accts, err := t.getAccounts(u, accessToken)
 
 	if err != nil {
 		return nil, err
 	}
 
-	defer res.Body.Close()
-
-	if res.StatusCode >= 300 {
-		return nil, parseErrorResponse(res)
-	}
-
-	accountResp := AccountsResponse{}
-	err = json.NewDecoder(res.Body).Decode(&accountResp)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &accountResp.Results[0], nil
+	return &accts[0], nil
 }
 
 // GetAccountAsync triggers an async request to TrueLayer to get the specified
