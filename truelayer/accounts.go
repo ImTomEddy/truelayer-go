@@ -261,6 +261,52 @@ func (t *TrueLayer) GetAccountBalance(accessToken string, accountID string) (*Ac
 		return nil, err
 	}
 
+	return t.getAccountBalance(u, accessToken)
+}
+
+// GetAccountBalanceAsync triggers an async request to TrueLayer to get the
+// specified account balance based on the accountID, this account must be
+// associated to the provided accessToken or an error will occur.
+//
+// params
+//   - accessToken - access token to get the info from
+//   - webhookURI - uri to access upon async job completion
+//   - accountID - id of the account to get
+//
+// returns
+//   - truelayer response
+//   - errors from the api request
+func (t *TrueLayer) GetAccountBalanceAsync(accessToken string, webhookURI string, accountID string) (*AsyncRequestResponse, error) {
+	return t.doAsyncAccountRequest(fmt.Sprintf(EndpointDataV1AccountBalance, accountID), accessToken, webhookURI, nil)
+}
+
+// GetAccountBalanceAsyncRequest takes the result from a Webhook request and
+// sends a request to the correct endpoint to fetch the Account.
+//
+// params
+//   - accessToken - the access token associated to the webhook request
+//   - webhook - the webhook request to fetch data from
+func (t *TrueLayer) GetAccountBalanceAsyncRequest(accessToken string, webhook *WebhookRequest) (*AccountBalance, error) {
+	u, err := buildURL(t.getBaseURL(), fmt.Sprintf(EndpointDataV1Results, webhook.TaskID))
+
+	if err != nil {
+		return nil, err
+	}
+
+	return t.getAccountBalance(u, accessToken)
+}
+
+// GetAccountBalance retrieves the specified account's balance this account must
+// be associated to the provided accessToken or an error will occur.
+//
+// params
+//   - accessToken - access token to get the account from
+//   - accountID - the account ID to get
+//
+// returns
+//   - the balance
+//   - errors from the api request
+func (t *TrueLayer) getAccountBalance(u *url.URL, accessToken string) (*AccountBalance, error) {
 	res, err := t.doAuthorizedGetRequest(u, accessToken)
 
 	if err != nil {
@@ -281,22 +327,6 @@ func (t *TrueLayer) GetAccountBalance(accessToken string, accountID string) (*Ac
 	}
 
 	return &balanceResp.Results[0], nil
-}
-
-// GetAccountBalanceAsync triggers an async request to TrueLayer to get the
-// specified account balance based on the accountID, this account must be
-// associated to the provided accessToken or an error will occur.
-//
-// params
-//   - accessToken - access token to get the info from
-//   - webhookURI - uri to access upon async job completion
-//   - accountID - id of the account to get
-//
-// returns
-//   - truelayer response
-//   - errors from the api request
-func (t *TrueLayer) GetAccountBalanceAsync(accessToken string, webhookURI string, accountID string) (*AsyncRequestResponse, error) {
-	return t.doAsyncAccountRequest(fmt.Sprintf(EndpointDataV1AccountBalance, accountID), accessToken, webhookURI, nil)
 }
 
 // GetAccountTransactions retrieves the specified account's transactions this
