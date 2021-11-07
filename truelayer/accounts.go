@@ -222,6 +222,28 @@ func (t *TrueLayer) GetAccountAsync(accessToken string, webhookURI string, accou
 	return t.doAsyncAccountRequest(fmt.Sprintf(EndpointDataV1Account, accountID), accessToken, webhookURI, nil)
 }
 
+// GetAccountAsyncRequest takes the result from a Webhook request and sends a
+// request to the correct endpoint to fetch the Account.
+//
+// params
+//   - accessToken - the access token associated to the webhook request
+//   - webhook - the webhook request to fetch data from
+func (t *TrueLayer) GetAccountAsyncRequest(accessToken string, webhook *WebhookRequest) (*Account, error) {
+	u, err := buildURL(t.getBaseURL(), fmt.Sprintf(EndpointDataV1Results, webhook.TaskID))
+
+	if err != nil {
+		return nil, err
+	}
+
+	accts, err := t.getAccounts(u, accessToken)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &accts[0], nil
+}
+
 // GetAccountBalance retrieves the specified account's balance this account must
 // be associated to the provided accessToken or an error will occur.
 //
